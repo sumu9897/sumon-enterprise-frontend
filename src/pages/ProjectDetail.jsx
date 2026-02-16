@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import api from '../services/api';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 import { FaMapMarkerAlt, FaCalendar, FaBuilding, FaArrowLeft } from 'react-icons/fa';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import projectsData from '../data/projects.json'; // ← import your JSON file
 
 const ProjectDetail = () => {
   const { slug } = useParams();
@@ -19,17 +18,29 @@ const ProjectDetail = () => {
     fetchProject();
   }, [slug]);
 
-  const fetchProject = async () => {
+  const fetchProject = () => {
     try {
       setLoading(true);
-      const response = await api.get(`/projects/slug/${slug}`);
-      setProject(response.data.data);
+      const found = projectsData.find((p) => p.slug === slug);
+      setProject(found || null);
     } catch (error) {
-      toast.error('Failed to load project details');
-      console.error('Error:', error);
+      console.error('Error loading project:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper: build a full address string from the address object
+  const buildFullAddress = (address) => {
+    return [
+      address.plot && `Plot ${address.plot}`,
+      address.road && `Road ${address.road}`,
+      address.block && `Block ${address.block}`,
+      address.area,
+      address.city,
+    ]
+      .filter(Boolean)
+      .join(', ');
   };
 
   if (loading) {
@@ -50,6 +61,7 @@ const ProjectDetail = () => {
   }
 
   const images = project.images?.map((img) => img.url) || [];
+  const fullAddress = buildFullAddress(project.address);
 
   return (
     <div className="section-padding">
@@ -74,7 +86,9 @@ const ProjectDetail = () => {
               {project.status}
             </span>
           </div>
-          <p className="text-xl text-gray-600">{project.company}</p>
+          {project.company && (
+            <p className="text-xl text-gray-600">{project.company}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -130,22 +144,22 @@ const ProjectDetail = () => {
                       {project.specifications.floors}
                     </div>
                   )}
-                  {project.specifications.areaPerFloor && (
+                  {project.specifications.floorArea && (
                     <div>
                       <span className="font-semibold">Area per Floor:</span>{' '}
-                      {project.specifications.areaPerFloor}
+                      {project.specifications.floorArea}
                     </div>
                   )}
-                  {project.specifications.totalArea && (
+                  {project.specifications.type && (
                     <div>
-                      <span className="font-semibold">Total Area:</span>{' '}
-                      {project.specifications.totalArea}
+                      <span className="font-semibold">Type:</span>{' '}
+                      {project.specifications.type}
                     </div>
                   )}
-                  {project.specifications.constructionType && (
+                  {project.specifications.finish && (
                     <div>
-                      <span className="font-semibold">Construction Type:</span>{' '}
-                      {project.specifications.constructionType}
+                      <span className="font-semibold">Finish:</span>{' '}
+                      {project.specifications.finish}
                     </div>
                   )}
                 </div>
@@ -159,46 +173,40 @@ const ProjectDetail = () => {
             <div className="card p-6">
               <h3 className="text-xl font-semibold mb-4">Project Information</h3>
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <FaBuilding className="text-primary text-xl mt-1" />
-                  <div>
-                    <div className="font-semibold">Client</div>
-                    <div className="text-gray-600">{project.company}</div>
+                {project.company && (
+                  <div className="flex items-start gap-3">
+                    <FaBuilding className="text-primary text-xl mt-1" />
+                    <div>
+                      <div className="font-semibold">Client</div>
+                      <div className="text-gray-600">{project.company}</div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex items-start gap-3">
                   <FaMapMarkerAlt className="text-primary text-xl mt-1" />
                   <div>
                     <div className="font-semibold">Location</div>
-                    <div className="text-gray-600">{project.fullAddress}</div>
+                    <div className="text-gray-600">{fullAddress}</div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <FaCalendar className="text-primary text-xl mt-1" />
-                  <div>
-                    <div className="font-semibold">Start Date</div>
-                    <div className="text-gray-600">
-                      {new Date(project.startDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                      })}
+                {project.startDate && (
+                  <div className="flex items-start gap-3">
+                    <FaCalendar className="text-primary text-xl mt-1" />
+                    <div>
+                      <div className="font-semibold">Start Date</div>
+                      <div className="text-gray-600">{project.startDate}</div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {project.finishDate && (
                   <div className="flex items-start gap-3">
                     <FaCalendar className="text-primary text-xl mt-1" />
                     <div>
                       <div className="font-semibold">Finish Date</div>
-                      <div className="text-gray-600">
-                        {new Date(project.finishDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                        })}
-                      </div>
+                      <div className="text-gray-600">{project.finishDate}</div>
                     </div>
                   </div>
                 )}
@@ -215,9 +223,14 @@ const ProjectDetail = () => {
 
             {/* CTA */}
             <div className="card p-6 bg-primary text-white">
-              <h3 className="text-xl font-semibold mb-3">Interested in a Similar Project?</h3>
+              <h3 className="text-xl font-semibold mb-3">
+                Interested in a Similar Project?
+              </h3>
               <p className="mb-4">Contact us to discuss your construction needs</p>
-              <Link to="/contact" className="btn bg-white text-primary hover:bg-gray-100 w-full">
+              <Link
+                to="/contact"
+                className="btn bg-white text-primary hover:bg-gray-100 w-full"
+              >
                 Get In Touch
               </Link>
             </div>
@@ -227,14 +240,13 @@ const ProjectDetail = () => {
         {/* Lightbox */}
         {lightboxOpen && images.length > 0 && (
           <Lightbox
-            mainSrc={images[photoIndex]}
-            nextSrc={images[(photoIndex + 1) % images.length]}
-            prevSrc={images[(photoIndex + images.length - 1) % images.length]}
-            onCloseRequest={() => setLightboxOpen(false)}
-            onMovePrevRequest={() =>
-              setPhotoIndex((photoIndex + images.length - 1) % images.length)
-            }
-            onMoveNextRequest={() => setPhotoIndex((photoIndex + 1) % images.length)}
+            open={lightboxOpen}
+            close={() => setLightboxOpen(false)}
+            index={photoIndex}
+            slides={images.map((src) => ({ src }))}
+            on={{
+              view: ({ index }) => setPhotoIndex(index),
+            }}
           />
         )}
       </div>

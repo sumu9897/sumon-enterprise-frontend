@@ -1,0 +1,386 @@
+[
+  {
+    "id": 1,
+    "company": "Cube Holding Ltd",
+    "projectName": "Gohon",
+    "slug": "gohon",
+    "description": "(G+9) Residential 3200sft per floor Animation Fair-Face",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "3200sft per floor",
+      "type": "Residential",
+      "finish": "Animation Fair-Face"
+    },
+    "address": {
+      "plot": "106 & 107",
+      "road": "6",
+      "block": "I",
+      "area": "Bashundhara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2023",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 2,
+    "company": "Cube Holding Ltd",
+    "projectName": "Abesh",
+    "slug": "abesh",
+    "description": "(G+9) Residential 3400sft per floor Animation Fair-Face",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "3400sft per floor",
+      "type": "Residential",
+      "finish": "Animation Fair-Face"
+    },
+    "address": {
+      "plot": "121 & 128",
+      "road": "5 & 6",
+      "block": "I",
+      "area": "Bashundhara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2024",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 3,
+    "company": "Cube Holding Ltd",
+    "projectName": "Bistry",
+    "slug": "bistry",
+    "description": "(G+9) Residential 1800sft per floor Animation Fair-Face",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "1800sft per floor",
+      "type": "Residential",
+      "finish": "Animation Fair-Face"
+    },
+    "address": {
+      "plot": "121 & 128",
+      "road": "18",
+      "block": "F",
+      "area": "Bashundhara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2023",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 4,
+    "company": "SA Construction",
+    "projectName": "Bindabon",
+    "slug": "bindabon",
+    "description": "(G+9) Residential 5200sft per floor",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "5200sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": null,
+      "road": null,
+      "block": null,
+      "area": "Sector-17, Uttara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2024",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 5,
+    "company": "Akota Holding Ltd",
+    "projectName": "Akota Tower",
+    "slug": "akota-tower",
+    "description": "Two Basement, Ground Floor and 9th Floor Residential 2000sft per floor Full Fair-Face",
+    "specifications": {
+      "floors": "2B+G+9",
+      "floorArea": "2000sft per floor",
+      "type": "Residential",
+      "finish": "Full Fair-Face"
+    },
+    "address": {
+      "plot": "House # 01",
+      "road": "28",
+      "block": null,
+      "area": "Sector-07, Uttara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2025",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 6,
+    "company": "Iconic Building Ltd",
+    "projectName": "Lake View 1",
+    "slug": "lake-view-1",
+    "description": "(G+9) Residential 6800sft per floor",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "6800sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": null,
+      "road": null,
+      "block": null,
+      "area": "Darmosagor Par",
+      "city": "Comilla"
+    },
+    "status": "Finished",
+    "startDate": "2010",
+    "finishDate": "2013",
+    "images": []
+  },
+  {
+    "id": 7,
+    "company": "Iconic Building Ltd",
+    "projectName": "Lake View 2",
+    "slug": "lake-view-2",
+    "description": "(G+9) Residential 7200sft per floor Animation Fair-Face",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "7200sft per floor",
+      "type": "Residential",
+      "finish": "Animation Fair-Face"
+    },
+    "address": {
+      "plot": null,
+      "road": null,
+      "block": null,
+      "area": "Darmosagor Par",
+      "city": "Comilla"
+    },
+    "status": "Finished",
+    "startDate": "2023",
+    "finishDate": "2026",
+    "images": []
+  },
+  {
+    "id": 8,
+    "company": "JMI Builders & Construction Ltd",
+    "projectName": "JMI Siria Jahan Nibash",
+    "slug": "jmi-siria-jahan-nibash",
+    "description": "(G+9) Residential 2300sft per floor",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "2300sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": "191/C",
+      "road": "Sher E Bangla Road",
+      "block": null,
+      "area": "Masdair, Fatulla",
+      "city": "Narayangonj"
+    },
+    "status": "Finished",
+    "startDate": "2022",
+    "finishDate": "2025",
+    "images": []
+  },
+  {
+    "id": 9,
+    "company": "JMI Builders & Construction Ltd",
+    "projectName": "JMI Shahnawaz Mansion",
+    "slug": "jmi-shahnawaz-mansion",
+    "description": "(G+9) Residential 4600sft per floor",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "4600sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": "Ka-51/2",
+      "road": null,
+      "block": null,
+      "area": "Jagannathpur, Vatara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2022",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 10,
+    "company": "JMI Builders & Construction Ltd",
+    "projectName": "JMI The Four Gables",
+    "slug": "jmi-the-four-gables",
+    "description": "(G+8) Residential 2600sft per floor",
+    "specifications": {
+      "floors": "G+8",
+      "floorArea": "2600sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": "2981 & 2982",
+      "road": "17",
+      "block": "M",
+      "area": "Bashundhara R/A",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2024",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 11,
+    "company": "Sisal Composite Ltd",
+    "projectName": "Sisal Factory Building",
+    "slug": "sisal-factory-building",
+    "description": "G+5 stores building, 18000sft per floor",
+    "specifications": {
+      "floors": "G+5",
+      "floorArea": "18000sft per floor",
+      "type": "Commercial / Industrial",
+      "finish": null
+    },
+    "address": {
+      "plot": "2981 & 2982",
+      "road": "17",
+      "block": "M",
+      "area": "Bashundhara R/A",
+      "city": "Dhaka"
+    },
+    "status": "Finished",
+    "startDate": "2024",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 12,
+    "company": "Akota Holding Ltd",
+    "projectName": "Eastern University Student Hall",
+    "slug": "eastern-university-student-hall",
+    "description": "One Basement, Ground Floor and 5th Floor Residential 2000sft per floor Full Fair-Face",
+    "specifications": {
+      "floors": "1B+G+5",
+      "floorArea": "2000sft per floor",
+      "type": "Residential",
+      "finish": "Full Fair-Face"
+    },
+    "address": {
+      "plot": null,
+      "road": null,
+      "block": null,
+      "area": "Ashulia, Savar",
+      "city": "Dhaka"
+    },
+    "status": "Finished",
+    "startDate": "2020",
+    "finishDate": "2022",
+    "images": []
+  },
+  {
+    "id": 13,
+    "company": null,
+    "projectName": "Doctor Home",
+    "slug": "doctor-home-nawnadigir",
+    "description": "One Basement, Ground Floor and 9th Floor Residential 7000sft per floor",
+    "specifications": {
+      "floors": "1B+G+9",
+      "floorArea": "7000sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": null,
+      "road": null,
+      "block": null,
+      "area": "Nawnadigir Par",
+      "city": "Comilla"
+    },
+    "status": "Finished",
+    "startDate": "2017",
+    "finishDate": "2020",
+    "images": []
+  },
+  {
+    "id": 14,
+    "company": null,
+    "projectName": "Doctor Home",
+    "slug": "doctor-home-talpukur",
+    "description": "One Basement, Ground Floor and 9th Floor Residential 8000sft per floor",
+    "specifications": {
+      "floors": "1B+G+9",
+      "floorArea": "8000sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": null,
+      "road": null,
+      "block": null,
+      "area": "Talpukur Par",
+      "city": "Comilla"
+    },
+    "status": "Finished",
+    "startDate": "2016",
+    "finishDate": "2022",
+    "images": []
+  },
+  {
+    "id": 15,
+    "company": "MM Construction",
+    "projectName": "Eden Garden",
+    "slug": "eden-garden",
+    "description": "One Basement, Ground Floor and 12th Floor Residential 4000sft per floor Full Fair-Face",
+    "specifications": {
+      "floors": "1B+G+12",
+      "floorArea": "4000sft per floor",
+      "type": "Residential",
+      "finish": "Full Fair-Face"
+    },
+    "address": {
+      "plot": "1540 & 1541",
+      "road": "37",
+      "block": "M",
+      "area": "Bashundhara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2024",
+    "finishDate": null,
+    "images": []
+  },
+  {
+    "id": 16,
+    "company": null,
+    "projectName": "Unnamed Project",
+    "slug": "unnamed-project-basundhara-l256",
+    "description": "Ground Floor and 9th Floor Residential 2300sft per floor",
+    "specifications": {
+      "floors": "G+9",
+      "floorArea": "2300sft per floor",
+      "type": "Residential",
+      "finish": null
+    },
+    "address": {
+      "plot": "256",
+      "road": "2",
+      "block": "L",
+      "area": "Bashundhara",
+      "city": "Dhaka"
+    },
+    "status": "Ongoing",
+    "startDate": "2025",
+    "finishDate": null,
+    "images": []
+  }
+]

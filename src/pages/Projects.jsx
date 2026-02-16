@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
 import { toast } from 'react-toastify';
 import { FaSearch, FaFilter } from 'react-icons/fa';
+import projectsData from '../data/projects.json'; // ← import your JSON file
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -23,27 +23,55 @@ const Projects = () => {
     fetchProjects();
   }, [filters, pagination.page]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      
-      if (filters.status) params.append('status', filters.status);
-      if (filters.company) params.append('company', filters.company);
-      if (filters.search) params.append('search', filters.search);
-      params.append('page', pagination.page);
-      params.append('limit', pagination.limit);
 
-      const response = await api.get(`/projects?${params.toString()}`);
-      setProjects(response.data.data);
-      setPagination({
-        ...pagination,
-        total: response.data.pagination.total,
-        pages: response.data.pagination.pages,
+      // 1. Filter the imported JSON data
+      let filtered = projectsData.filter((project) => {
+        const matchStatus =
+          !filters.status ||
+          project.status.toLowerCase() === filters.status.toLowerCase();
+
+        const matchCompany =
+          !filters.company ||
+          (project.company &&
+            project.company
+              .toLowerCase()
+              .includes(filters.company.toLowerCase()));
+
+        const matchSearch =
+          !filters.search ||
+          project.projectName
+            .toLowerCase()
+            .includes(filters.search.toLowerCase()) ||
+          (project.company &&
+            project.company
+              .toLowerCase()
+              .includes(filters.search.toLowerCase())) ||
+          (project.address.area &&
+            project.address.area
+              .toLowerCase()
+              .includes(filters.search.toLowerCase())) ||
+          (project.address.city &&
+            project.address.city
+              .toLowerCase()
+              .includes(filters.search.toLowerCase()));
+
+        return matchStatus && matchCompany && matchSearch;
       });
+
+      // 2. Paginate the filtered results
+      const total = filtered.length;
+      const pages = Math.ceil(total / pagination.limit);
+      const startIndex = (pagination.page - 1) * pagination.limit;
+      const paginated = filtered.slice(startIndex, startIndex + pagination.limit);
+
+      setProjects(paginated);
+      setPagination((prev) => ({ ...prev, total, pages }));
     } catch (error) {
       toast.error('Failed to load projects');
-      console.error('Error fetching projects:', error);
+      console.error('Error loading projects:', error);
     } finally {
       setLoading(false);
     }
@@ -51,17 +79,17 @@ const Projects = () => {
 
   const handleFilterChange = (key, value) => {
     setFilters({ ...filters, [key]: value });
-    setPagination({ ...pagination, page: 1 }); // Reset to first page
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handlePageChange = (newPage) => {
-    setPagination({ ...pagination, page: newPage });
+    setPagination((prev) => ({ ...prev, page: newPage }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const clearFilters = () => {
     setFilters({ status: '', company: '', search: '' });
-    setPagination({ ...pagination, page: 1 });
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   return (
@@ -73,7 +101,7 @@ const Projects = () => {
             Our Projects
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Explore our portfolio of 50+ completed and ongoing construction projects
+            Explore our portfolio of completed and ongoing construction projects
             across Bangladesh
           </p>
         </div>
@@ -120,7 +148,7 @@ const Projects = () => {
               </label>
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder="Search by name, city, area..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
                 className="input"
@@ -159,7 +187,9 @@ const Projects = () => {
           </div>
         ) : projects.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-xl text-gray-600">No projects found matching your criteria.</p>
+            <p className="text-xl text-gray-600">
+              No projects found matching your criteria.
+            </p>
             <button onClick={clearFilters} className="btn-primary mt-4">
               Clear Filters
             </button>
@@ -169,10 +199,11 @@ const Projects = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((project) => (
                 <Link
-                  key={project._id}
+                  key={project.id}
                   to={`/projects/${project.slug}`}
                   className="card group"
                 >
+                  {/* Project Image */}
                   <div className="aspect-video bg-gray-200 overflow-hidden">
                     {project.images?.[0] ? (
                       <img
@@ -186,14 +217,37 @@ const Projects = () => {
                       </div>
                     )}
                   </div>
+
+                  {/* Project Info */}
                   <div className="p-6">
                     <h3 className="text-xl font-semibold mb-2 line-clamp-1">
                       {project.projectName}
                     </h3>
-                    <p className="text-gray-600 mb-2 line-clamp-1">{project.company}</p>
-                    <p className="text-sm text-gray-500 mb-3">
-                      {project.address.area}, {project.address.city}
+
+                    {project.company && (
+                      <p className="text-gray-600 mb-2 line-clamp-1">
+                        {project.company}
+                      </p>
+                    )}
+
+                    <p className="text-sm text-gray-500 mb-1">
+                      {[project.address.area, project.address.city]
+                        .filter(Boolean)
+                        .join(', ')}
                     </p>
+
+                    {project.address.plot && (
+                      <p className="text-xs text-gray-400 mb-3">
+                        Plot {project.address.plot}
+                        {project.address.road && `, Road ${project.address.road}`}
+                        {project.address.block && `, Block ${project.address.block}`}
+                      </p>
+                    )}
+
+                    <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                      {project.description}
+                    </p>
+
                     <div className="flex items-center justify-between">
                       <span
                         className={`badge ${
@@ -204,11 +258,16 @@ const Projects = () => {
                       >
                         {project.status}
                       </span>
-                      {project.specifications?.floors && (
-                        <span className="text-sm text-gray-600">
-                          {project.specifications.floors}
+
+                      <div className="text-right text-xs text-gray-500">
+                        {project.specifications?.floors && (
+                          <span className="block">{project.specifications.floors}</span>
+                        )}
+                        <span>
+                          {project.startDate}
+                          {project.finishDate ? ` – ${project.finishDate}` : ''}
                         </span>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </Link>
