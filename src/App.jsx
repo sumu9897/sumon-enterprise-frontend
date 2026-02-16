@@ -18,6 +18,8 @@ import InquiryManager from './pages/admin/InquiryManager';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import PrivateRoute from './components/common/PrivateRoute';
+import NotFound from './pages/NotFound';
+
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
                 <Route path="/projects/:slug" element={<ProjectDetail />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<NotFound />} />
+
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
