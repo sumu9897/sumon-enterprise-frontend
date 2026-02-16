@@ -1,19 +1,28 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../services/api';
-import { toast } from 'react-toastify';
-import { FaSearch, FaFilter, FaBuilding, FaArrowRight, FaTimes } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../services/api";
+import { toast } from "react-toastify";
+import {
+  FaSearch,
+  FaFilter,
+  FaBuilding,
+  FaArrowRight,
+  FaTimes,
+} from "react-icons/fa";
 
 /* ── useDarkMode — syncs with Header toggle ── */
 const useDarkMode = () => {
   const [dark, setDark] = useState(() =>
-    document.documentElement.classList.contains('dark')
+    document.documentElement.classList.contains("dark"),
   );
   useEffect(() => {
     const obs = new MutationObserver(() =>
-      setDark(document.documentElement.classList.contains('dark'))
+      setDark(document.documentElement.classList.contains("dark")),
     );
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
     return () => obs.disconnect();
   }, []);
   return dark;
@@ -21,68 +30,74 @@ const useDarkMode = () => {
 
 const Projects = () => {
   const dark = useDarkMode();
-  const [projects, setProjects]     = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [filters, setFilters]       = useState({ status: '', company: '', search: '' });
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    status: "",
+    company: "",
+    search: "",
+  });
   const [pagination, setPagination] = useState({
-    page:  1,
-    limit: 100,   // ← fetch ALL projects at once so nothing is hidden
+    page: 1,
+    limit: 100, // ← fetch ALL projects at once so nothing is hidden
     total: 0,
     pages: 0,
   });
 
   /* Theme tokens */
-  const bg    = dark ? '#0F1117' : '#F8F5EF';
-  const card  = dark ? '#1C1E2A' : '#FFFFFF';
-  const text  = dark ? '#E8E8F0' : '#1A1A2E';
-  const sub   = dark ? '#888899' : '#6B6B8A';
-  const bdr   = dark ? '#2A2A3E' : '#E8E4DC';
-  const inp   = dark ? '#13151E' : '#FAFAFA';
-  const gold  = '#C9A84C';
-  const dark2 = dark ? '#13151E' : '#1A1A2E';
-  const sk1   = dark ? '#1C1E2A' : '#F0EDE8';
-  const sk2   = dark ? '#252838' : '#E8E4DC';
+  const bg = dark ? "#0F1117" : "#F8F5EF";
+  const card = dark ? "#1C1E2A" : "#FFFFFF";
+  const text = dark ? "#E8E8F0" : "#1A1A2E";
+  const sub = dark ? "#888899" : "#6B6B8A";
+  const bdr = dark ? "#2A2A3E" : "#E8E4DC";
+  const inp = dark ? "#13151E" : "#FAFAFA";
+  const gold = "#C9A84C";
+  const dark2 = dark ? "#13151E" : "#1A1A2E";
+  const sk1 = dark ? "#1C1E2A" : "#F0EDE8";
+  const sk2 = dark ? "#252838" : "#E8E4DC";
 
-  useEffect(() => { fetchProjects(); }, [filters, pagination.page]);
+  useEffect(() => {
+    fetchProjects();
+  }, [filters, pagination.page]);
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filters.status)  params.append('status',  filters.status);
-      if (filters.company) params.append('company', filters.company);
-      if (filters.search)  params.append('search',  filters.search);
-      params.append('page',  pagination.page);
-      params.append('limit', pagination.limit);
+      if (filters.status) params.append("status", filters.status);
+      if (filters.company) params.append("company", filters.company);
+      if (filters.search) params.append("search", filters.search);
+      params.append("page", pagination.page);
+      params.append("limit", pagination.limit);
 
       const response = await api.get(`/projects?${params.toString()}`);
       setProjects(response.data.data);
-      setPagination(prev => ({
+      setPagination((prev) => ({
         ...prev,
         total: response.data.pagination.total,
         pages: response.data.pagination.pages,
       }));
     } catch (error) {
-      toast.error('Failed to load projects');
-      console.error('Error fetching projects:', error);
+      toast.error("Failed to load projects");
+      console.error("Error fetching projects:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handlePageChange = (n) => {
-    setPagination(prev => ({ ...prev, page: n }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setPagination((prev) => ({ ...prev, page: n }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const clearFilters = () => {
-    setFilters({ status: '', company: '', search: '' });
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setFilters({ status: "", company: "", search: "" });
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const hasFilters = filters.status || filters.company || filters.search;
@@ -161,47 +176,56 @@ const Projects = () => {
       <div
         className="proj-root min-h-screen"
         style={{
-          background: bg, color: text,
-          '--bdr': bdr, '--inp': inp, '--txt': text,
-          '--sk1': sk1, '--sk2': sk2,
+          background: bg,
+          color: text,
+          "--bdr": bdr,
+          "--inp": inp,
+          "--txt": text,
+          "--sk1": sk1,
+          "--sk2": sk2,
         }}
       >
-
         {/* ══ HERO ══ */}
-        <section className="hero-proj relative overflow-hidden pt-20" style={{ background: dark2 }}>
+        <section
+          className="hero-proj relative overflow-hidden pt-20"
+          style={{ background: dark2 }}
+        >
           <div
             className="absolute inset-0 opacity-[0.06]"
             style={{
-              backgroundImage: 'url("https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600")',
-              backgroundSize: 'cover', backgroundPosition: 'center',
+              backgroundImage:
+                'url("https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600")',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
           />
           <div
             className="absolute left-0 top-0 h-full w-1"
-            style={{ background: `linear-gradient(180deg, transparent, ${gold}, transparent)` }}
+            style={{
+              background: `linear-gradient(180deg, transparent, ${gold}, transparent)`,
+            }}
           />
           <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center pb-20">
             <span className="section-label fade-up d1">Portfolio</span>
             <div className="gold-divider center fade-up d1" />
             <h1
               className="serif font-black text-white fade-up d2"
-              style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', lineHeight: 1.1 }}
+              style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)", lineHeight: 1.1 }}
             >
               Our <span style={{ color: gold }}>Projects</span>
             </h1>
             <p
               className="mt-4 text-base max-w-xl mx-auto fade-up d3"
-              style={{ color: 'rgba(255,255,255,.5)' }}
+              style={{ color: "rgba(255,255,255,.5)" }}
             >
               {!loading && pagination.total > 0
                 ? `${pagination.total}+ completed and ongoing construction projects across Bangladesh`
-                : 'Completed and ongoing construction projects across Bangladesh'}
+                : "Completed and ongoing construction projects across Bangladesh"}
             </p>
           </div>
         </section>
 
         <div className="max-w-7xl mx-auto px-6 lg:px-8 -mt-6 pb-24 relative z-10">
-
           {/* ══ FILTERS ══ */}
           <div
             className="rounded-sm p-6 mb-8 shadow-lg"
@@ -217,7 +241,7 @@ const Projects = () => {
                 </label>
                 <select
                   value={filters.status}
-                  onChange={e => handleFilterChange('status', e.target.value)}
+                  onChange={(e) => handleFilterChange("status", e.target.value)}
                   className="filter-input"
                 >
                   <option value="">All Status</option>
@@ -237,7 +261,9 @@ const Projects = () => {
                   type="text"
                   placeholder="Filter by company…"
                   value={filters.company}
-                  onChange={e => handleFilterChange('company', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("company", e.target.value)
+                  }
                   className="filter-input"
                 />
               </div>
@@ -253,14 +279,17 @@ const Projects = () => {
                   type="text"
                   placeholder="Name, city, area…"
                   value={filters.search}
-                  onChange={e => handleFilterChange('search', e.target.value)}
+                  onChange={(e) => handleFilterChange("search", e.target.value)}
                   className="filter-input"
                 />
               </div>
             </div>
 
             {hasFilters && (
-              <div className="mt-4 pt-4" style={{ borderTop: `1px solid ${bdr}` }}>
+              <div
+                className="mt-4 pt-4"
+                style={{ borderTop: `1px solid ${bdr}` }}
+              >
                 <button
                   onClick={clearFilters}
                   className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-opacity hover:opacity-70"
@@ -277,7 +306,9 @@ const Projects = () => {
             className="mb-6 text-xs font-bold tracking-widest uppercase"
             style={{ color: sub }}
           >
-            {loading ? 'Loading…' : `Showing ${projects.length} of ${pagination.total} projects`}
+            {loading
+              ? "Loading…"
+              : `Showing ${projects.length} of ${pagination.total} projects`}
           </div>
 
           {/* ══ GRID ══ */}
@@ -305,9 +336,16 @@ const Projects = () => {
             </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-24">
-              <FaBuilding className="mx-auto mb-4 text-5xl" style={{ color: bdr }} />
-              <p className="text-lg font-semibold mb-2" style={{ color: text }}>No projects found</p>
-              <p className="text-sm mb-6" style={{ color: sub }}>Try adjusting your search or filters</p>
+              <FaBuilding
+                className="mx-auto mb-4 text-5xl"
+                style={{ color: bdr }}
+              />
+              <p className="text-lg font-semibold mb-2" style={{ color: text }}>
+                No projects found
+              </p>
+              <p className="text-sm mb-6" style={{ color: sub }}>
+                Try adjusting your search or filters
+              </p>
               <button
                 onClick={clearFilters}
                 className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase transition-opacity hover:opacity-70"
@@ -319,7 +357,7 @@ const Projects = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map(project => (
+                {projects.map((project) => (
                   <Link
                     key={project._id}
                     to={`/projects/${project.slug}`}
@@ -329,7 +367,7 @@ const Projects = () => {
                     {/* Image */}
                     <div
                       className="aspect-video overflow-hidden relative"
-                      style={{ background: dark ? '#1A1A2E' : '#E8E4DC' }}
+                      style={{ background: dark ? "#1A1A2E" : "#E8E4DC" }}
                     >
                       {project.images?.[0] ? (
                         <img
@@ -354,10 +392,11 @@ const Projects = () => {
                       <span
                         className="absolute top-3 right-3 text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-sm"
                         style={{
-                          background: project.status === 'Ongoing'
-                            ? 'rgba(201,168,76,.92)'
-                            : 'rgba(34,197,94,.85)',
-                          color: 'white',
+                          background:
+                            project.status === "Ongoing"
+                              ? "rgba(201,168,76,.92)"
+                              : "rgba(34,197,94,.85)",
+                          color: "white",
                         }}
                       >
                         {project.status}
@@ -374,7 +413,10 @@ const Projects = () => {
                       </h3>
 
                       {project.company && (
-                        <p className="text-xs font-semibold mb-1" style={{ color: gold }}>
+                        <p
+                          className="text-xs font-semibold mb-1"
+                          style={{ color: gold }}
+                        >
                           {project.company}
                         </p>
                       )}
@@ -382,13 +424,13 @@ const Projects = () => {
                       <p className="text-xs mb-1" style={{ color: sub }}>
                         {[project.address?.area, project.address?.city]
                           .filter(Boolean)
-                          .join(', ')}
+                          .join(", ")}
                       </p>
 
                       {project.description && (
                         <p
                           className="text-xs line-clamp-2 mb-3 leading-relaxed"
-                          style={{ color: sub, opacity: .8 }}
+                          style={{ color: sub, opacity: 0.8 }}
                         >
                           {project.description}
                         </p>
@@ -398,12 +440,25 @@ const Projects = () => {
                         className="flex items-center justify-between pt-3"
                         style={{ borderTop: `1px solid ${bdr}` }}
                       >
-                        <div className="text-xs font-semibold" style={{ color: sub }}>
-                          <span>{project.specifications?.floors}</span>
+                        <div
+                          className="text-xs font-semibold"
+                          style={{ color: sub }}
+                        >
+                          {project.specifications?.floors && (
+                            <span>{project.specifications.floors}</span>
+                          )}
                           {project.startDate && (
-                            <span className="ml-2 opacity-70">
-                              {project.startDate}
-                              {project.finishDate ? ` – ${project.finishDate}` : ''}
+                            <span
+                              className={
+                                project.specifications?.floors
+                                  ? "ml-2 opacity-70"
+                                  : "opacity-70"
+                              }
+                            >
+                              {new Date(project.startDate).getFullYear()}
+                              {project.finishDate
+                                ? ` – ${new Date(project.finishDate).getFullYear()}`
+                                : " – Running"}
                             </span>
                           )}
                         </div>
@@ -426,7 +481,11 @@ const Projects = () => {
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
                     className="page-btn"
-                    style={{ background: card, color: text, border: `1px solid ${bdr}` }}
+                    style={{
+                      background: card,
+                      color: text,
+                      border: `1px solid ${bdr}`,
+                    }}
                   >
                     ←
                   </button>
@@ -438,8 +497,8 @@ const Projects = () => {
                       className="page-btn"
                       style={{
                         background: pagination.page === i + 1 ? gold : card,
-                        color:      pagination.page === i + 1 ? 'white' : text,
-                        border:     `1px solid ${pagination.page === i + 1 ? gold : bdr}`,
+                        color: pagination.page === i + 1 ? "white" : text,
+                        border: `1px solid ${pagination.page === i + 1 ? gold : bdr}`,
                       }}
                     >
                       {i + 1}
@@ -450,7 +509,11 @@ const Projects = () => {
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.pages}
                     className="page-btn"
-                    style={{ background: card, color: text, border: `1px solid ${bdr}` }}
+                    style={{
+                      background: card,
+                      color: text,
+                      border: `1px solid ${bdr}`,
+                    }}
                   >
                     →
                   </button>
