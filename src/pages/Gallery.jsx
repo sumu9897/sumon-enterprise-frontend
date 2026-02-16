@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import api from '../services/api';
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import projectsData from '../data/projects.json'; // ← import your JSON file
 
 const Gallery = () => {
-  const [projects, setProjects] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -15,40 +13,37 @@ const Gallery = () => {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetchProjects();
+    loadImages();
   }, []);
 
-  const fetchProjects = async () => {
+  const loadImages = () => {
     try {
-      const response = await api.get('/projects?limit=100');
-      setProjects(response.data.data);
-      
-      // Extract all images
+      // Extract all images from every project in the JSON
       const allImages = [];
-      response.data.data.forEach((project) => {
+      projectsData.forEach((project) => {
         if (project.images && project.images.length > 0) {
           project.images.forEach((img) => {
             allImages.push({
               url: img.url,
               projectName: project.projectName,
-              projectId: project._id,
+              projectId: project.id,
               status: project.status,
             });
           });
         }
       });
-      
       setImages(allImages);
     } catch (error) {
-      toast.error('Failed to load gallery');
+      console.error('Failed to load gallery:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredImages = filter === 'all' 
-    ? images 
-    : images.filter((img) => img.status === filter);
+  const filteredImages =
+    filter === 'all'
+      ? images
+      : images.filter((img) => img.status === filter);
 
   if (loading) {
     return <LoadingSpinner text="Loading gallery..." />;
@@ -117,20 +112,19 @@ const Gallery = () => {
           </div>
         )}
 
-        {/* Lightbox */}
+        {/* Lightbox — updated to yet-another-react-lightbox v3 API */}
         {lightboxOpen && filteredImages.length > 0 && (
           <Lightbox
-            mainSrc={filteredImages[photoIndex].url}
-            nextSrc={filteredImages[(photoIndex + 1) % filteredImages.length].url}
-            prevSrc={filteredImages[(photoIndex + filteredImages.length - 1) % filteredImages.length].url}
-            onCloseRequest={() => setLightboxOpen(false)}
-            onMovePrevRequest={() =>
-              setPhotoIndex((photoIndex + filteredImages.length - 1) % filteredImages.length)
-            }
-            onMoveNextRequest={() =>
-              setPhotoIndex((photoIndex + 1) % filteredImages.length)
-            }
-            imageTitle={filteredImages[photoIndex].projectName}
+            open={lightboxOpen}
+            close={() => setLightboxOpen(false)}
+            index={photoIndex}
+            slides={filteredImages.map((img) => ({
+              src: img.url,
+              title: img.projectName,
+            }))}
+            on={{
+              view: ({ index }) => setPhotoIndex(index),
+            }}
           />
         )}
       </div>

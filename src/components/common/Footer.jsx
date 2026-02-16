@@ -84,7 +84,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <FaEnvelope className="flex-shrink-0" />
-                <span>info@sumonenterprise.com</span>
+                <span>sumonconstruction2024@gmail.com</span>
               </div>
             </div>
           </div>
