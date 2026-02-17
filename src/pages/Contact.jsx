@@ -149,13 +149,13 @@ const Contact = () => {
   ];
 
   const officeHours = [
-    { day: 'Saturday',  hours: '8:00 AM – 6:00 PM', open: true  },
-    { day: 'Sunday',    hours: '8:00 AM – 6:00 PM', open: true  },
-    { day: 'Monday',    hours: '8:00 AM – 6:00 PM', open: true  },
-    { day: 'Tuesday',   hours: '8:00 AM – 6:00 PM', open: true  },
-    { day: 'Wednesday', hours: '8:00 AM – 6:00 PM', open: true  },
-    { day: 'Thursday',  hours: '8:00 AM – 6:00 PM', open: true  },
-    { day: 'Friday',    hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Saturday',  hours: '8:00 AM – 5:00 PM', open: true  },
+    { day: 'Sunday',    hours: '8:00 AM – 5:00 PM', open: true  },
+    { day: 'Monday',    hours: '8:00 AM – 5:00 PM', open: true  },
+    { day: 'Tuesday',   hours: '8:00 AM – 5:00 PM', open: true  },
+    { day: 'Wednesday', hours: '8:00 AM – 5:00 PM', open: true  },
+    { day: 'Thursday',  hours: '8:00 AM – 5:00 PM', open: true  },
+    { day: 'Friday',    hours: '8:00 AM – 5:00 PM', open: true  },
   ];
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -551,6 +551,7 @@ const Contact = () => {
                   style={{ background: dark2, color: 'white' }}
                 >
                   <FaMapMarkerAlt style={{ color: gold }} />
+                  
                   Dhaka, Bangladesh
                 </div>
               </div>
@@ -597,13 +598,13 @@ const Contact = () => {
                   })}
                 </div>
 
-                <div
+                {/* <div
                   className="mt-5 pt-5 text-xs text-center"
                   style={{ borderTop: `1px solid ${border}`, color: sub }}
                 >
                   <FaClock className="inline mr-1.5" style={{ color: gold }} />
                   Today is highlighted in gold
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
