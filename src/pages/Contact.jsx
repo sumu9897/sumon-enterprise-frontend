@@ -117,17 +117,17 @@ const Contact = () => {
     {
       icon: <FaPhone />,
       label: 'Call Us',
-      value: '+880 1XXXXXXXXX',
-      note: 'Sat – Thu, 9AM – 6PM',
-      href: 'tel:+8801XXXXXXXXX',
+      value: '+880 1789779059',
+      note: 'Sat – Thu, 8AM – 6PM',
+      href: 'tel:+8801789779059',
       cta: 'Call Now',
     },
     {
       icon: <FaWhatsapp />,
       label: 'WhatsApp',
-      value: '+880 1XXXXXXXXX',
+      value: '+880 1789779059',
       note: 'Quick replies on WhatsApp',
-      href: 'https://wa.me/8801XXXXXXXXX',
+      href: 'https://wa.me/8801789779059',
       cta: 'Message Us',
     },
     {
@@ -149,13 +149,13 @@ const Contact = () => {
   ];
 
   const officeHours = [
-    { day: 'Saturday',  hours: '9:00 AM – 6:00 PM', open: true  },
-    { day: 'Sunday',    hours: '9:00 AM – 6:00 PM', open: true  },
-    { day: 'Monday',    hours: '9:00 AM – 6:00 PM', open: true  },
-    { day: 'Tuesday',   hours: '9:00 AM – 6:00 PM', open: true  },
-    { day: 'Wednesday', hours: '9:00 AM – 6:00 PM', open: true  },
-    { day: 'Thursday',  hours: '9:00 AM – 6:00 PM', open: true  },
-    { day: 'Friday',    hours: 'Closed',             open: false },
+    { day: 'Saturday',  hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Sunday',    hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Monday',    hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Tuesday',   hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Wednesday', hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Thursday',  hours: '8:00 AM – 6:00 PM', open: true  },
+    { day: 'Friday',    hours: '8:00 AM – 6:00 PM', open: true  },
   ];
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -664,14 +664,14 @@ const Contact = () => {
               25+ years of expertise · 50+ completed projects · Trusted across Bangladesh
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <a href="tel:+8801XXXXXXXXX" className="btn-gold">
+              <a href="tel:+8801789779059" className="btn-gold">
                 <FaPhone /> Call Us Now
               </a>
               <a href="mailto:sumonconstruction2024@gmail.com" className="btn-outline-gold">
                 <FaEnvelope /> Email Us
               </a>
               <a
-                href="https://wa.me/8801XXXXXXXXX"
+                href="https://wa.me/8801789779059"
                 target="_blank" rel="noreferrer"
                 className="btn-outline-gold"
                 style={{ borderColor: '#25D366', color: '#25D366' }}
