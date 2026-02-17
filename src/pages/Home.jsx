@@ -371,9 +371,18 @@ const Home = () => {
                       <div className="flex items-center justify-between pt-3" style={{ borderTop:`1px solid ${bdr}` }}>
                         <span className="text-xs font-semibold" style={{ color:sub }}>
                           {project.specifications?.floors}
-                          {project.startDate && (
-                            <span className="ml-2 opacity-70">
-                              {project.startDate}{project.finishDate ? ` – ${project.finishDate}` : ''}
+                           {project.startDate && (
+                            <span
+                              className={
+                                project.specifications?.floors
+                                  ? "ml-2 opacity-70"
+                                  : "opacity-70"
+                              }
+                            >
+                              {new Date(project.startDate).getFullYear()}
+                              {project.finishDate
+                                ? ` – ${new Date(project.finishDate).getFullYear()}`
+                                : " – Running"}
                             </span>
                           )}
                         </span>
