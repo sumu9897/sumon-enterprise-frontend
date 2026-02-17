@@ -80,7 +80,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <FaPhone className="flex-shrink-0" />
-                <span>+880 1XXXXXXXXX</span>
+                <span>+880 1789779059</span>
               </div>
               <div className="flex items-center space-x-3">
                 <FaEnvelope className="flex-shrink-0" />
