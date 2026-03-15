@@ -478,7 +478,7 @@ const Home = () => {
               Ready to Start Your Project?
             </h2>
             <p className="text-base mb-10 max-w-2xl mx-auto" style={{ color:'rgba(255,255,255,.5)' }}>
-              25+ years of expertise · 50+ completed projects · Trusted across Bangladesh
+              25+ years of expertise · 80+ completed projects · Trusted across Bangladesh
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/contact" className="btn-gold">Contact Us <FaArrowRight size={12} /></Link>

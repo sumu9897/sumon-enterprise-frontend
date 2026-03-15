@@ -11,7 +11,7 @@
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
 **A professional construction company portfolio website built with React and Tailwind CSS.**  
-Showcasing 25+ years of expertise and 50+ completed projects across Bangladesh.
+Showcasing 25+ years of expertise and 80+ completed projects across Bangladesh.
 
 </div>
 

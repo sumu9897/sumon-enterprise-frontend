@@ -662,7 +662,7 @@ const Contact = () => {
               Start Your Project Today
             </h2>
             <p className="mb-10 max-w-2xl mx-auto text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              25+ years of expertise · 50+ completed projects · Trusted across Bangladesh
+              25+ years of expertise · 80+ completed projects · Trusted across Bangladesh
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a href="tel:+8801789779059" className="btn-gold">
