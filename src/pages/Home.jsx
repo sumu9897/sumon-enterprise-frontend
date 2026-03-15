@@ -113,7 +113,7 @@ const Home = () => {
 
   const stats = [
     { end: 25,  suffix: '+', label: 'Years of Experience', icon: <FaChartLine /> },
-    { end: 50,  suffix: '+', label: 'Projects Completed',  icon: <FaBuilding />  },
+    { end: 80,  suffix: '+', label: 'Projects Completed',  icon: <FaBuilding />  },
     { end: 4,   suffix: '',  label: 'Core Services',       icon: <FaTools />     },
     { end: 100, suffix: '%', label: 'Client Satisfaction', icon: <FaHandshake /> },
   ];

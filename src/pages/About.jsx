@@ -60,7 +60,7 @@ const About = () => {
     { year:'2005', event:'10th Project Completed', desc:'Reached our first major milestone with residential projects.' },
     { year:'2010', event:'Expanded to Major Cities', desc:'Extended operations to Dhaka, Comilla, and Narayangonj.' },
     { year:'2015', event:'30 Projects Milestone', desc:'Diversified into commercial and industrial construction.' },
-    { year:'2020', event:'50+ Projects Delivered', desc:'Established as one of Bangladesh\'s trusted contractors.' },
+    { year:'2020', event:'80+ Projects Delivered', desc:'Established as one of Bangladesh\'s trusted contractors.' },
     { year:'2025', event:'25 Years of Excellence', desc:'Celebrating a quarter century of building Bangladesh\'s future.' },
   ];
 

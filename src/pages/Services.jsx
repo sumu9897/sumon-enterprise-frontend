@@ -222,7 +222,7 @@ const Services = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { val:'25+', label:'Years Experience', desc:'Over two decades of proven expertise in construction across Bangladesh.' },
-                { val:'50+', label:'Projects Completed', desc:'Successfully delivered diverse construction projects of all scales.' },
+                { val:'80+', label:'Projects Completed', desc:'Successfully delivered diverse construction projects of all scales.' },
                 { val:'100%', label:'Quality Assured', desc:'Unwavering commitment to the highest quality standards on every project.' },
               ].map((s, i) => (
                 <div key={i} className="text-center p-8 rounded-sm" style={{ border:`1px solid rgba(201,168,76,.2)` }}>
