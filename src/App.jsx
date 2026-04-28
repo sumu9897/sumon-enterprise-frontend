@@ -21,87 +21,73 @@ import PrivateRoute from './components/common/PrivateRoute';
 import NotFound from './pages/NotFound';
 
 
+import { useLocation } from 'react-router-dom';
+
 function App() {
   return (
     <AuthProvider>
       <ProjectProvider>
         <Router>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-grow">
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/projects/:slug" element={<ProjectDetail />} />
-                <Route path="/gallery" element={<Gallery />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="*" element={<NotFound />} />
-
-
-                {/* Admin Routes */}
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route
-                  path="/admin/dashboard"
-                  element={
-                    <PrivateRoute>
-                      <AdminDashboard />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/projects"
-                  element={
-                    <PrivateRoute>
-                      <ProjectManager />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/projects/new"
-                  element={
-                    <PrivateRoute>
-                      <ProjectForm />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/projects/edit/:id"
-                  element={
-                    <PrivateRoute>
-                      <ProjectForm />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/admin/inquiries"
-                  element={
-                    <PrivateRoute>
-                      <InquiryManager />
-                    </PrivateRoute>
-                  }
-                />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
+          <RouterWrapper />
         </Router>
       </ProjectProvider>
     </AuthProvider>
+  );
+}
+
+function RouterWrapper() {
+  const location = useLocation();
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      
+      {/* Show Header only for public */}
+      {!isAdminRoute && <Header />}
+
+      <main className="flex-grow">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:slug" element={<ProjectDetail />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="*" element={<NotFound />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          <Route path="/admin/dashboard" element={
+            <PrivateRoute><AdminDashboard /></PrivateRoute>
+          } />
+
+          <Route path="/admin/projects" element={
+            <PrivateRoute><ProjectManager /></PrivateRoute>
+          } />
+
+          <Route path="/admin/projects/new" element={
+            <PrivateRoute><ProjectForm /></PrivateRoute>
+          } />
+
+          <Route path="/admin/projects/edit/:id" element={
+            <PrivateRoute><ProjectForm /></PrivateRoute>
+          } />
+
+          <Route path="/admin/inquiries" element={
+            <PrivateRoute><InquiryManager /></PrivateRoute>
+          } />
+        </Routes>
+      </main>
+
+      {/* Show Footer only for public */}
+      {!isAdminRoute && <Footer />}
+
+      <ToastContainer />
+    </div>
   );
 }
 
