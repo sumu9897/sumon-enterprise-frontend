@@ -1,94 +1,87 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 import { AuthProvider } from './context/AuthContext';
 import { ProjectProvider } from './context/ProjectContext';
-import Home from './pages/Home';
-import About from './pages/About';
-import Services from './pages/Services';
-import Projects from './pages/Projects';
-import ProjectDetail from './pages/ProjectDetail';
-import Gallery from './pages/Gallery';
-import Contact from './pages/Contact';
-import AdminLogin from './pages/admin/Login';
-import AdminDashboard from './pages/admin/Dashboard';
-import ProjectManager from './pages/admin/ProjectManager';
-import ProjectForm from './pages/admin/ProjectForm';
-import InquiryManager from './pages/admin/InquiryManager';
-import Header from './components/common/Header';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import Footer from './components/common/Footer';
+import Header from './components/common/Header';
+import LoadingSpinner from './components/common/LoadingSpinner';
 import PrivateRoute from './components/common/PrivateRoute';
-import NotFound from './pages/NotFound';
+import RouteEffects from './components/common/RouteEffects';
 
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Services = lazy(() => import('./pages/Services'));
+const Projects = lazy(() => import('./pages/Projects'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const Gallery = lazy(() => import('./pages/Gallery'));
+const Contact = lazy(() => import('./pages/Contact'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const AdminLogin = lazy(() => import('./pages/admin/Login'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const ProjectManager = lazy(() => import('./pages/admin/ProjectManager'));
+const ProjectForm = lazy(() => import('./pages/admin/ProjectForm'));
+const InquiryManager = lazy(() => import('./pages/admin/InquiryManager'));
 
-import { useLocation } from 'react-router-dom';
+const protectedPage = (element) => <PrivateRoute>{element}</PrivateRoute>;
 
-function App() {
+const RouterContent = () => {
+  const { pathname } = useLocation();
+  const isAdminRoute = pathname.startsWith('/admin');
+
   return (
-    <AuthProvider>
-      <ProjectProvider>
-        <Router>
-          <RouterWrapper />
-        </Router>
-      </ProjectProvider>
-    </AuthProvider>
-  );
-}
-
-function RouterWrapper() {
-  const location = useLocation();
-
-  const isAdminRoute = location.pathname.startsWith('/admin');
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      
-      {/* Show Header only for public */}
-      {!isAdminRoute && <Header />}
-
-      <main className="flex-grow">
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:slug" element={<ProjectDetail />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="*" element={<NotFound />} />
-
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-
-          <Route path="/admin/dashboard" element={
-            <PrivateRoute><AdminDashboard /></PrivateRoute>
-          } />
-
-          <Route path="/admin/projects" element={
-            <PrivateRoute><ProjectManager /></PrivateRoute>
-          } />
-
-          <Route path="/admin/projects/new" element={
-            <PrivateRoute><ProjectForm /></PrivateRoute>
-          } />
-
-          <Route path="/admin/projects/edit/:id" element={
-            <PrivateRoute><ProjectForm /></PrivateRoute>
-          } />
-
-          <Route path="/admin/inquiries" element={
-            <PrivateRoute><InquiryManager /></PrivateRoute>
-          } />
-        </Routes>
+    <div className="flex min-h-screen flex-col">
+      <RouteEffects />
+      {!isAdminRoute ? <Header /> : null}
+      <main className="flex-grow" id="main-content">
+        <Suspense fallback={<LoadingSpinner fullPage text="Loading page…" />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:slug" element={<ProjectDetail />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={protectedPage(<AdminDashboard />)} />
+            <Route path="/admin/projects" element={protectedPage(<ProjectManager />)} />
+            <Route path="/admin/projects/new" element={protectedPage(<ProjectForm />)} />
+            <Route path="/admin/projects/edit/:id" element={protectedPage(<ProjectForm />)} />
+            <Route path="/admin/inquiries" element={protectedPage(<InquiryManager />)} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
-
-      {/* Show Footer only for public */}
-      {!isAdminRoute && <Footer />}
-
-      <ToastContainer />
+      {!isAdminRoute ? <Footer /> : null}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={4500}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        pauseOnHover
+        theme="colored"
+        limit={3}
+      />
     </div>
   );
-}
+};
+
+const App = () => (
+  <ErrorBoundary>
+    <AuthProvider>
+      <ProjectProvider>
+        <BrowserRouter>
+          <RouterContent />
+        </BrowserRouter>
+      </ProjectProvider>
+    </AuthProvider>
+  </ErrorBoundary>
+);
 
 export default App;

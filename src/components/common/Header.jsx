@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaBars, FaTimes, FaSun, FaMoon, FaHardHat } from 'react-icons/fa';
+import { FaBars, FaTimes, FaHardHat } from 'react-icons/fa';
+
+const NAV_LINKS = [
+  { path: '/', label: 'Home' },
+  { path: '/about', label: 'About' },
+  { path: '/services', label: 'Services' },
+  { path: '/projects', label: 'Projects' },
+  { path: '/gallery', label: 'Gallery' },
+  { path: '/contact', label: 'Contact' },
+];
 
 /* ─────────────────────────────────────────────
    useDarkMode hook — persists preference
@@ -44,6 +53,19 @@ const Header = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   // Scroll shadow effect
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -56,21 +78,13 @@ const Header = () => {
       ? location.pathname === '/'
       : location.pathname.startsWith(path);
 
-  const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/about', label: 'About' },
-    { path: '/services', label: 'Services' },
-    { path: '/projects', label: 'Projects' },
-    { path: '/gallery', label: 'Gallery' },
-    { path: '/contact', label: 'Contact' },
-  ];
-
   return (
     <>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-white focus:px-4 focus:py-3 focus:text-secondary">
+        Skip to main content
+      </a>
       {/* ── Inject Google Font ── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap');
-
         :root {
           --gold: #C9A84C;
           --gold-light: #E8C96A;
@@ -206,7 +220,7 @@ const Header = () => {
 
             {/* ── Desktop Navigation ── */}
             <div className="hidden md:flex items-center gap-7">
-              {navLinks.map((link) => (
+              {NAV_LINKS.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
@@ -232,7 +246,9 @@ const Header = () => {
               {/* Dark/Light Toggle */}
               <button
                 onClick={() => setDark(!dark)}
-                aria-label="Toggle theme"
+                aria-label={`Switch to ${dark ? 'light' : 'dark'} theme`}
+                aria-pressed={dark}
+                title={`Switch to ${dark ? 'light' : 'dark'} theme`}
                 className="theme-btn flex-shrink-0"
                 style={{ background: dark ? '#2A2A4E' : '#E8C96A' }}
               >
@@ -253,7 +269,9 @@ const Header = () => {
               {/* Mobile Hamburger */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                aria-label="Toggle menu"
+                aria-label={`${isOpen ? 'Close' : 'Open'} navigation menu`}
+                aria-expanded={isOpen}
+                aria-controls="mobile-navigation"
                 className={`md:hidden w-10 h-10 flex items-center justify-center rounded-sm transition-colors duration-200
                   ${dark ? 'hover:bg-[#1C1C2E]' : 'hover:bg-[#F7F3EC]'}
                 `}
@@ -270,12 +288,13 @@ const Header = () => {
           {isOpen && (
             <div
               ref={mobileMenuRef}
+              id="mobile-navigation"
               className={`md:hidden mobile-menu-enter pb-5 border-t
                 ${dark ? 'border-[#2A2A3E]' : 'border-[#E5E5E5]'}
               `}
             >
               <div className="pt-3 flex flex-col gap-1">
-                {navLinks.map((link) => (
+                {NAV_LINKS.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}

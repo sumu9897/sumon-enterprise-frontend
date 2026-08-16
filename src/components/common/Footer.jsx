@@ -1,106 +1,73 @@
 import { Link } from 'react-router-dom';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaLinkedin } from 'react-icons/fa';
+import { FaEnvelope, FaFacebookF, FaHardHat, FaMapMarkerAlt, FaPhoneAlt } from 'react-icons/fa';
 
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
+const links = [
+  { to: '/about', label: 'About us' },
+  { to: '/services', label: 'Services' },
+  { to: '/projects', label: 'Projects' },
+  { to: '/gallery', label: 'Gallery' },
+  { to: '/contact', label: 'Contact' },
+];
 
-  return (
-    <footer className="bg-gray-900 text-gray-300">
-      <div className="container-custom py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div>
-            <h3 className="text-white text-xl font-heading font-bold mb-4">
-              M/S SUMON ENTERPRISE
-            </h3>
-            <p className="mb-2">Established: 2000</p>
-            <p className="mb-4">
-              Leading construction company providing quality services since 2000.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-primary transition-colors">
-                <FaFacebook size={24} />
-              </a>
-              <a href="#" className="hover:text-primary transition-colors">
-                <FaLinkedin size={24} />
-              </a>
-            </div>
-          </div>
+const services = ['Main contracting', 'Subcontracting', 'Repair & renovation', 'Apartment development'];
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-white text-lg font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/about" className="hover:text-primary transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/services" className="hover:text-primary transition-colors">
-                  Services
-                </Link>
-              </li>
-              <li>
-                <Link to="/projects" className="hover:text-primary transition-colors">
-                  Projects
-                </Link>
-              </li>
-              <li>
-                <Link to="/gallery" className="hover:text-primary transition-colors">
-                  Gallery
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-primary transition-colors">
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h4 className="text-white text-lg font-semibold mb-4">Our Services</h4>
-            <ul className="space-y-2">
-              <li>Main Contractor</li>
-              <li>Sub Contractor</li>
-              <li>Repairing Work</li>
-              <li>Apartment Development</li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-white text-lg font-semibold mb-4">Contact Us</h4>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <FaMapMarkerAlt className="mt-1 flex-shrink-0" />
-                <span>Dhaka, Bangladesh</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <FaPhone className="flex-shrink-0" />
-                <span>+880 1789779059</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <FaEnvelope className="flex-shrink-0" />
-                <span>sumonconstruction2024@gmail.com</span>
-              </div>
-            </div>
-          </div>
+const Footer = () => (
+  <footer className="border-t border-white/10 bg-[#0F1117] text-white/60">
+    <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+      <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_1fr_1.2fr]">
+        <div>
+          <Link to="/" className="inline-flex items-center gap-3 text-white" aria-label="M/S Sumon Enterprise home">
+            <span className="flex h-11 w-11 items-center justify-center rounded-sm bg-primary text-white"><FaHardHat /></span>
+            <span>
+              <span className="block font-heading text-lg font-black uppercase leading-none">M/S Sumon</span>
+              <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.24em] text-primary">Enterprise</span>
+            </span>
+          </Link>
+          <p className="mt-5 max-w-sm text-sm leading-7">
+            Trusted construction and development services across Bangladesh since 2000, built on quality, accountability, and lasting client relationships.
+          </p>
+          <a
+            href="https://facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-primary hover:text-primary"
+            aria-label="Visit M/S Sumon Enterprise on Facebook"
+          >
+            <FaFacebookF />
+          </a>
         </div>
-      </div>
 
-      {/* Copyright */}
-      <div className="border-t border-gray-800">
-        <div className="container-custom py-6">
-          <div className="text-center text-sm">
-            <p>© {currentYear} M/S SUMON ENTERPRISE. All rights reserved.</p>
-          </div>
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Company</h2>
+          <ul className="mt-5 space-y-3 text-sm">
+            {links.map((link) => <li key={link.to}><Link className="transition hover:text-primary" to={link.to}>{link.label}</Link></li>)}
+          </ul>
         </div>
+
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Expertise</h2>
+          <ul className="mt-5 space-y-3 text-sm">
+            {services.map((service) => <li key={service}>{service}</li>)}
+          </ul>
+        </div>
+
+        <address className="not-italic">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-white">Contact</h2>
+          <div className="mt-5 space-y-4 text-sm">
+            <p className="flex items-start gap-3"><FaMapMarkerAlt className="mt-1 shrink-0 text-primary" /><span>Dhaka, Bangladesh</span></p>
+            <a className="flex items-center gap-3 transition hover:text-primary" href="tel:+8801789779059"><FaPhoneAlt className="shrink-0 text-primary" /><span>+880 1789-779059</span></a>
+            <a className="flex items-start gap-3 break-all transition hover:text-primary" href="mailto:sumonconstruction2024@gmail.com"><FaEnvelope className="mt-1 shrink-0 text-primary" /><span>sumonconstruction2024@gmail.com</span></a>
+          </div>
+        </address>
       </div>
-    </footer>
-  );
-};
+    </div>
+    <div className="border-t border-white/10">
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-6 text-center text-xs sm:flex-row sm:items-center sm:justify-between sm:text-left lg:px-8">
+        <p>© {new Date().getFullYear()} M/S Sumon Enterprise. All rights reserved.</p>
+        <p>Construction excellence since 2000.</p>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;

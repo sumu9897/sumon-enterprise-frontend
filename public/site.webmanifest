@@ -1,0 +1,9 @@
+{
+  "name": "M/S Sumon Enterprise",
+  "short_name": "Sumon Enterprise",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F1117",
+  "theme_color": "#C9A84C",
+  "description": "Construction and contracting services across Bangladesh"
+}

@@ -16,21 +16,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if admin is logged in on mount
     const token = localStorage.getItem('token');
-    const savedAdmin = localStorage.getItem('admin');
-    
-    if (token && savedAdmin) {
-      try {
-        setAdmin(JSON.parse(savedAdmin));
-      } catch (error) {
-        console.error('Error parsing saved admin:', error);
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    api.get('/auth/me')
+      .then((response) => {
+        if (active) setAdmin(response.data.data);
+      })
+      .catch(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('admin');
-      }
-    }
-    
-    setLoading(false);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => { active = false; };
   }, []);
 
   const login = async (email, password) => {
@@ -38,13 +43,13 @@ export const AuthProvider = ({ children }) => {
     const { admin: adminData, token } = response.data.data;
     
     localStorage.setItem('token', token);
-    localStorage.setItem('admin', JSON.stringify(adminData));
     setAdmin(adminData);
     
     return response.data;
   };
 
   const logout = () => {
+    api.post('/auth/logout').catch(() => undefined);
     localStorage.removeItem('token');
     localStorage.removeItem('admin');
     setAdmin(null);
