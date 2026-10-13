@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { toast } from 'react-toastify';
 import { FaBuilding, FaEnvelope, FaHistory, FaImages, FaPlus, FaSave, FaTrash } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
@@ -20,6 +20,49 @@ const TextInput = ({ title, ...props }) => <Label title={title}><input className
 const TextArea = ({ title, ...props }) => <Label title={title}><textarea className={`${inputClass} min-h-28 resize-y`} {...props} /></Label>;
 const RemoveButton = ({ onClick, label = 'Remove' }) => <button type="button" onClick={onClick} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-red-300 transition hover:bg-red-500/10"><FaTrash />{label}</button>;
 
+const ImageField = ({ title = 'Image', value, onChange }) => {
+  const inputId = useId();
+  const [uploading, setUploading] = useState(false);
+
+  const uploadImage = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    const payload = new FormData();
+    payload.append('image', file);
+    try {
+      setUploading(true);
+      const response = await api.post('/site-content/images', payload);
+      onChange(response.data.data.url);
+      toast.success('Image uploaded. Save all changes to publish it.', { toastId: `image-upload-${inputId}` });
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Image could not be uploaded.'), { toastId: `image-upload-error-${inputId}` });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <span className="text-xs font-semibold text-white/55">{title}</span>
+      <div className="mt-2 grid gap-3 sm:grid-cols-[112px_1fr]">
+        <div className="aspect-video overflow-hidden rounded-xl border border-white/10 bg-white/5 sm:aspect-square">
+          {value ? <img src={value} alt={`${title} preview`} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-2xl text-white/15"><FaImages /></div>}
+        </div>
+        <div className="space-y-3">
+          <input className={`${inputClass} mt-0`} type="url" value={value || ''} onChange={(event) => onChange(event.target.value)} placeholder="https://…" />
+          <input id={inputId} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={uploadImage} />
+          <label htmlFor={inputId} className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-400/20 ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
+            <FaImages />{uploading ? 'Uploading…' : 'Upload image'}
+          </label>
+          <p className="text-[11px] text-white/30">JPEG, PNG or WebP · maximum 5MB</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ContentManager = () => {
   const [tab, setTab] = useState('about');
   const [content, setContent] = useState(cloneDefaults);
@@ -28,8 +71,11 @@ const ContentManager = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     Promise.allSettled([api.get('/site-content/admin'), api.get('/projects?limit=100')])
       .then(([contentResult, projectsResult]) => {
+        if (!active) return;
         const data = contentResult.status === 'fulfilled' ? contentResult.value.data.data || {} : cloneDefaults();
         const loadedProjects = projectsResult.status === 'fulfilled' ? projectsResult.value.data.data || [] : [];
         const fallbackGallery = loadedProjects.flatMap((project) => (project.images || []).map((image, index) => ({ imageUrl: image.url, caption: image.caption || project.projectName, project: project._id, order: index, active: true })));
@@ -40,9 +86,24 @@ const ContentManager = () => {
           gallery: (data.gallery?.length ? data.gallery : fallbackGallery).map((item) => ({ ...item, project: item.project?._id || item.project })),
         });
         setProjects(loadedProjects);
-        if (contentResult.status === 'rejected') toast.warning('CMS API is not deployed yet. Existing content is shown as a safe fallback.');
+        if (contentResult.status === 'rejected') {
+          toast.error(getApiErrorMessage(contentResult.reason, 'CMS content could not be loaded.'), {
+            toastId: 'cms-content-load-error',
+          });
+        }
+        if (projectsResult.status === 'rejected') {
+          toast.error(getApiErrorMessage(projectsResult.reason, 'Projects could not be loaded.'), {
+            toastId: 'cms-projects-load-error',
+          });
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const setAbout = (field, value) => setContent((current) => ({ ...current, about: { ...current.about, [field]: value } }));
@@ -92,7 +153,7 @@ const ContentManager = () => {
               <TextInput title="Page title" value={content.about.title} onChange={(e) => setAbout('title', e.target.value)} />
               <TextInput title="Subtitle" value={content.about.subtitle} onChange={(e) => setAbout('subtitle', e.target.value)} />
               <TextInput title="Story heading" value={content.about.heading} onChange={(e) => setAbout('heading', e.target.value)} />
-              <div className="sm:col-span-2"><TextInput title="Story image URL" type="url" value={content.about.imageUrl || ''} onChange={(e) => setAbout('imageUrl', e.target.value)} /></div>
+              <div className="sm:col-span-2"><ImageField title="Story image" value={content.about.imageUrl || ''} onChange={(value) => setAbout('imageUrl', value)} /></div>
               <div className="sm:col-span-2"><TextArea title="Story paragraphs (one paragraph per line)" value={(content.about.paragraphs || []).join('\n')} onChange={(e) => setAbout('paragraphs', e.target.value.split('\n').filter(Boolean))} /></div>
             </div>
             <EditorList title="Milestones" onAdd={() => addAboutArray('milestones', { year: '', title: '', description: '' })}>
@@ -107,7 +168,7 @@ const ContentManager = () => {
             {content.services.map((service, index) => <div key={service._id || index} className="grid gap-4 rounded-2xl border border-white/5 bg-white/[.02] p-4 lg:grid-cols-2">
               <TextInput title="Service title" value={service.title || ''} onChange={(e) => updateArray('services', index, 'title', e.target.value)} />
               <TextInput title="Tagline" value={service.tagline || ''} onChange={(e) => updateArray('services', index, 'tagline', e.target.value)} />
-              <TextInput title="Image URL" type="url" value={service.imageUrl || ''} onChange={(e) => updateArray('services', index, 'imageUrl', e.target.value)} />
+              <ImageField title="Service image" value={service.imageUrl || ''} onChange={(value) => updateArray('services', index, 'imageUrl', value)} />
               <TextInput title="Display order" type="number" min="0" value={service.order ?? index} onChange={(e) => updateArray('services', index, 'order', Number(e.target.value))} />
               <TextArea title="Description" value={service.description || ''} onChange={(e) => updateArray('services', index, 'description', e.target.value)} />
               <TextArea title="Features (one per line)" value={(service.features || []).join('\n')} onChange={(e) => updateArray('services', index, 'features', e.target.value.split('\n').filter(Boolean))} />
@@ -119,7 +180,7 @@ const ContentManager = () => {
             <p className="-mt-3 text-xs leading-5 text-white/35">Every image must reference a project. Visitors can open that project directly from the image overlay.</p>
             {content.gallery.map((item, index) => <div key={item._id || index} className="grid gap-4 rounded-2xl border border-white/5 bg-white/[.02] p-4 lg:grid-cols-[140px_1fr_auto]">
               <div className="aspect-square overflow-hidden rounded-xl bg-white/5">{item.imageUrl ? <img src={item.imageUrl} alt="Gallery preview" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-3xl text-white/10"><FaImages /></div>}</div>
-              <div className="grid gap-3 sm:grid-cols-2"><Label title="Linked project"><select required className={inputClass} value={item.project || ''} onChange={(e) => { const project = projects.find((entry) => entry._id === e.target.value); updateArray('gallery', index, 'project', e.target.value); if (!item.imageUrl && project?.images?.[0]?.url) updateArray('gallery', index, 'imageUrl', project.images[0].url); }}><option value="">Select project</option>{projects.map((project) => <option key={project._id} value={project._id}>{project.projectName}</option>)}</select></Label><TextInput title="Display order" type="number" min="0" value={item.order ?? index} onChange={(e) => updateArray('gallery', index, 'order', Number(e.target.value))} /><div className="sm:col-span-2"><TextInput title="Image URL" type="url" value={item.imageUrl || ''} onChange={(e) => updateArray('gallery', index, 'imageUrl', e.target.value)} /></div><div className="sm:col-span-2"><TextInput title="Caption" value={item.caption || ''} onChange={(e) => updateArray('gallery', index, 'caption', e.target.value)} /></div><label className="flex items-center gap-2 text-sm text-white/60"><input type="checkbox" checked={item.active !== false} onChange={(e) => updateArray('gallery', index, 'active', e.target.checked)} />Visible on website</label></div>
+              <div className="grid gap-3 sm:grid-cols-2"><Label title="Linked project"><select required className={inputClass} value={item.project || ''} onChange={(e) => { const project = projects.find((entry) => entry._id === e.target.value); updateArray('gallery', index, 'project', e.target.value); if (!item.imageUrl && project?.images?.[0]?.url) updateArray('gallery', index, 'imageUrl', project.images[0].url); }}><option value="">Select project</option>{projects.map((project) => <option key={project._id} value={project._id}>{project.projectName}</option>)}</select></Label><TextInput title="Display order" type="number" min="0" value={item.order ?? index} onChange={(e) => updateArray('gallery', index, 'order', Number(e.target.value))} /><div className="sm:col-span-2"><ImageField title="Gallery image" value={item.imageUrl || ''} onChange={(value) => updateArray('gallery', index, 'imageUrl', value)} /></div><div className="sm:col-span-2"><TextInput title="Caption" value={item.caption || ''} onChange={(e) => updateArray('gallery', index, 'caption', e.target.value)} /></div><label className="flex items-center gap-2 text-sm text-white/60"><input type="checkbox" checked={item.active !== false} onChange={(e) => updateArray('gallery', index, 'active', e.target.checked)} />Visible on website</label></div>
               <RemoveButton onClick={() => removeArray('gallery', index)} />
             </div>)}
           </EditorList>}

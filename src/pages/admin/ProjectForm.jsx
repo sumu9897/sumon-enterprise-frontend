@@ -1,7 +1,7 @@
 import { useState, useEffect, memo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import api from '../../services/api';
+import api, { getApiErrorMessage } from '../../services/api';
 import {
   FaSave, FaTimes, FaMapMarkerAlt, FaInfoCircle,
   FaImage, FaBuilding, FaClipboardList, FaCheckCircle,
@@ -89,9 +89,11 @@ const ProjectForm = () => {
 
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [mapUrlInput, setMapUrlInput] = useState('');
   const [mapParsed, setMapParsed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
   const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
@@ -101,6 +103,7 @@ const ProjectForm = () => {
           setFetching(true);
           const r = await api.get(`/projects/${id}`);
           const p = r.data.data;
+          setExistingImages(p.images || []);
           setFormData({
             projectName: p.projectName || '',
             company: p.company || '',
@@ -138,6 +141,22 @@ const ProjectForm = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+    if (files.length > 10) {
+      toast.error('You can upload a maximum of 10 images.');
+      e.target.value = '';
+      return;
+    }
+    if (files.some((file) => !allowedTypes.has(file.type))) {
+      toast.error('Only JPEG, PNG and WebP images are allowed.');
+      e.target.value = '';
+      return;
+    }
+    if (files.some((file) => file.size > 5 * 1024 * 1024)) {
+      toast.error('Each image must be 5MB or smaller.');
+      e.target.value = '';
+      return;
+    }
     setImages(files);
     const readers = files.map(file => new Promise(res => {
       const r = new FileReader();
@@ -161,16 +180,40 @@ const ProjectForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = new FormData();
-    Object.keys(formData).forEach(key => {
-      if (formData[key] !== '' && formData[key] !== null) {
-        data.append(key, formData[key]);
-      }
-    });
-    images.forEach(img => data.append('images', img));
 
     try {
       setLoading(true);
+      const uploadedImages = [];
+
+      if (images.length > 0) {
+        const signatureResponse = await api.post('/projects/images/signature');
+        const { timestamp, folder, signature, cloudName, apiKey } = signatureResponse.data.data;
+
+        for (let index = 0; index < images.length; index += 1) {
+          setSaveStatus(`Uploading image ${index + 1} of ${images.length}…`);
+          const uploadData = new FormData();
+          uploadData.append('file', images[index]);
+          uploadData.append('api_key', apiKey);
+          uploadData.append('timestamp', String(timestamp));
+          uploadData.append('signature', signature);
+          uploadData.append('folder', folder);
+
+          const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: uploadData,
+          });
+          const uploadResult = await uploadResponse.json();
+          if (!uploadResponse.ok) throw new Error(uploadResult.error?.message || `Image ${index + 1} could not be uploaded`);
+          uploadedImages.push({ url: uploadResult.secure_url, publicId: uploadResult.public_id });
+        }
+      }
+
+      setSaveStatus(isEditMode ? 'Updating project…' : 'Creating project…');
+      const data = Object.fromEntries(
+        Object.entries(formData).filter(([, value]) => value !== '' && value !== null),
+      );
+      if (uploadedImages.length) data.uploadedImages = uploadedImages;
+
       if (isEditMode) {
         await api.put(`/projects/${id}`, data);
         toast.success('Project updated');
@@ -180,9 +223,12 @@ const ProjectForm = () => {
       }
       navigate('/admin/projects');
     } catch (err) {
-      toast.error(err.response?.data?.error?.message || 'Failed to save project');
+      toast.error(err.response
+        ? getApiErrorMessage(err, 'Failed to save project')
+        : (err.message || 'Failed to save project'));
     } finally {
       setLoading(false);
+      setSaveStatus('');
     }
   };
 
@@ -553,18 +599,18 @@ const ProjectForm = () => {
                   />
                 </Field>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      name="featured"
-                      style={{ display: 'none' }}
-                      checked={formData.featured}
-                      onChange={handleChange}
-                    />
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={formData.featured}
+                    aria-label="Feature this project on the home page"
+                    onClick={() => setFormData((current) => ({ ...current, featured: !current.featured }))}
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', border: 0, padding: 0, background: 'transparent', textAlign: 'left' }}
+                  >
                     <div
                       className="toggle-switch"
+                      aria-hidden="true"
                       style={{ backgroundColor: formData.featured ? '#C9A84C' : (dark ? '#2A2A3E' : '#E8E4DC') }}
-                      onClick={() => setFormData(p => ({ ...p, featured: !p.featured }))}
                     >
                       <div
                         className="toggle-thumb"
@@ -579,7 +625,7 @@ const ProjectForm = () => {
                         Shows on home page
                       </p>
                     </div>
-                  </label>
+                  </button>
                 </div>
               </div>
             </Section>
@@ -629,6 +675,15 @@ const ProjectForm = () => {
             </Section>
 
             <Section icon={<FaImage />} title="Project Images">
+              {isEditMode && existingImages.length > 0 && (
+                <Field label="Current Images" hint="Newly selected images will be added to these existing images.">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                    {existingImages.map((image, index) => (
+                      <img key={image._id || image.url} src={image.url} alt={`Current project ${index + 1}`} className="img-preview" />
+                    ))}
+                  </div>
+                </Field>
+              )}
               <Field label="Upload Images" hint="Select multiple images — max 5MB each (JPEG/PNG/WebP)">
                 <div
                   style={{
@@ -693,7 +748,7 @@ const ProjectForm = () => {
               <button type="submit" disabled={loading} className="btn-gold">
                 {loading ? (
                   <>
-                    <div className="btn-spinner" /> Saving…
+                    <div className="btn-spinner" /> {saveStatus || 'Saving…'}
                   </>
                 ) : (
                   <>
