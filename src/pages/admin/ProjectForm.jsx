@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api, { getApiErrorMessage } from '../../services/api';
@@ -96,6 +96,8 @@ const ProjectForm = () => {
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
   const [fetching, setFetching] = useState(false);
+  const [isDraggingImages, setIsDraggingImages] = useState(false);
+  const imageInputRef = useRef(null);
 
   useEffect(() => {
     if (isEditMode) {
@@ -140,24 +142,30 @@ const ProjectForm = () => {
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
+  const selectImageFiles = (fileList) => {
+    const incomingFiles = Array.from(fileList || []);
+    if (!incomingFiles.length) return;
+
+    const fileKey = (file) => `${file.name}-${file.size}-${file.lastModified}`;
+    const existingKeys = new Set(images.map(fileKey));
+    const files = [
+      ...images,
+      ...incomingFiles.filter((file) => !existingKeys.has(fileKey(file))),
+    ];
     const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
     if (files.length > 10) {
       toast.error('You can upload a maximum of 10 images.');
-      e.target.value = '';
       return;
     }
     if (files.some((file) => !allowedTypes.has(file.type))) {
       toast.error('Only JPEG, PNG and WebP images are allowed.');
-      e.target.value = '';
       return;
     }
     if (files.some((file) => file.size > 5 * 1024 * 1024)) {
       toast.error('Each image must be 5MB or smaller.');
-      e.target.value = '';
       return;
     }
+
     setImages(files);
     const readers = files.map(file => new Promise(res => {
       const r = new FileReader();
@@ -165,6 +173,31 @@ const ProjectForm = () => {
       r.readAsDataURL(file);
     }));
     Promise.all(readers).then(setImagePreviews);
+  };
+
+  const handleImageChange = (e) => {
+    selectImageFiles(e.target.files);
+    e.target.value = '';
+  };
+
+  const handleImageDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+    setIsDraggingImages(true);
+  };
+
+  const handleImageDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.currentTarget.contains(e.relatedTarget)) setIsDraggingImages(false);
+  };
+
+  const handleImageDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingImages(false);
+    selectImageFiles(e.dataTransfer.files);
   };
 
   const handleParseMapUrl = () => {
@@ -688,27 +721,45 @@ const ProjectForm = () => {
               )}
               <Field label="Upload Images" hint="Select multiple images — max 5MB each (JPEG/PNG/WebP)">
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Upload project images by selecting files or dragging and dropping them here"
                   style={{
-                    border: `2px dashed ${dark ? '#2A2A3E' : '#E8E4DC'}`,
+                    border: `2px dashed ${isDraggingImages ? '#C9A84C' : (dark ? '#2A2A3E' : '#E8E4DC')}`,
                     borderRadius: '2px',
                     padding: '32px',
                     textAlign: 'center',
                     cursor: 'pointer',
+                    background: isDraggingImages
+                      ? (dark ? 'rgba(201, 168, 76, 0.12)' : 'rgba(201, 168, 76, 0.08)')
+                      : 'transparent',
+                    transition: 'border-color .2s ease, background-color .2s ease',
                   }}
-                  onClick={() => document.getElementById('img-upload').click()}
+                  onClick={() => imageInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      imageInputRef.current?.click();
+                    }
+                  }}
+                  onDragEnter={handleImageDragOver}
+                  onDragOver={handleImageDragOver}
+                  onDragLeave={handleImageDragLeave}
+                  onDrop={handleImageDrop}
                 >
                   <FaImage style={{ color: '#C9A84C', fontSize: '32px', marginBottom: '8px' }} />
                   <p style={{ fontSize: '14px', fontWeight: 700, color: dark ? '#E8E8F0' : '#1A1A2E' }}>
-                    Click to select images
+                    {isDraggingImages ? 'Drop images to add them' : 'Drag & drop images here, or click to select'}
                   </p>
                   <p style={{ fontSize: '12px', color: dark ? '#888899' : '#6B6B8A', marginTop: '4px' }}>
                     {images.length > 0 ? `${images.length} file(s) selected` : 'JPEG, PNG, WebP · up to 5MB each'}
                   </p>
                   <input
                     id="img-upload"
+                    ref={imageInputRef}
                     type="file"
                     multiple
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     onChange={handleImageChange}
                     style={{ display: 'none' }}
                   />

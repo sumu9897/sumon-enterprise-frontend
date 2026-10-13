@@ -5,7 +5,13 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 export const getApiErrorMessage = (error, fallback = 'Something went wrong. Please try again.') => {
   if (error.code === 'ECONNABORTED') return 'The request took too long. Please try again.';
   if (!error.response) return 'Unable to reach the server. Check your connection and try again.';
-  return error.response.data?.error?.message || fallback;
+  const apiError = error.response.data?.error;
+  if (Array.isArray(apiError?.errors) && apiError.errors.length > 0) {
+    return apiError.errors.map(({ field, message }) => (
+      field ? `${field}: ${message}` : message
+    )).join(' · ');
+  }
+  return apiError?.message || fallback;
 };
 
 const api = axios.create({
