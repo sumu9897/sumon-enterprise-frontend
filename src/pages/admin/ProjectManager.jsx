@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import api from '../../services/api';
+import api, { getApiErrorMessage } from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
+import { PROJECT_STATUSES, getProjectStatus } from '../../constants/projectStatuses';
 import {
   FaPlus, FaEdit, FaTrash, FaEye, FaSearch,
   FaBuilding, FaFilter, FaTimes, FaStar, FaRegStar,
@@ -10,12 +11,9 @@ import {
 
 /* ─── Status Badge ────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
-  const map = {
-    Ongoing:  'bg-amber-500/15 text-amber-400 border border-amber-500/20',
-    Finished: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20',
-  };
+  const meta = getProjectStatus(status);
   return (
-    <span className={`inline-block px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${map[status] ?? map.Ongoing}`}>
+    <span className={`inline-block rounded-lg border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${meta.badgeClass}`}>
       {status}
     </span>
   );
@@ -23,11 +21,16 @@ const StatusBadge = ({ status }) => {
 
 /* ─── ProjectManager ──────────────────────────────────────── */
 const ProjectManager = () => {
+  const [searchParams] = useSearchParams();
+  const requestedStatus = searchParams.get('status');
   const [projects, setProjects] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [search, setSearch]     = useState('');
-  const [filter, setFilter]     = useState('');
+  const [filter, setFilter]     = useState(() => (
+    PROJECT_STATUSES.some((status) => status.value === requestedStatus) ? requestedStatus : ''
+  ));
   const [deleting, setDeleting] = useState(null);
+  const [togglingFeatured, setTogglingFeatured] = useState(() => new Set());
 
   useEffect(() => { fetchProjects(); }, []);
 
@@ -53,6 +56,39 @@ const ProjectManager = () => {
       toast.error('Failed to delete project');
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleFeaturedToggle = async (project) => {
+    if (togglingFeatured.has(project._id)) return;
+    const nextFeatured = !project.featured;
+
+    setProjects((current) => current.map((item) => (
+      item._id === project._id ? { ...item, featured: nextFeatured } : item
+    )));
+    setTogglingFeatured((current) => new Set(current).add(project._id));
+
+    try {
+      const response = await api.put(`/projects/${project._id}`, { featured: nextFeatured });
+      setProjects((current) => current.map((item) => (
+        item._id === project._id ? { ...item, ...response.data.data } : item
+      )));
+      toast.success(nextFeatured ? 'Project added to featured list.' : 'Project removed from featured list.', {
+        toastId: `featured-${project._id}`,
+      });
+    } catch (error) {
+      setProjects((current) => current.map((item) => (
+        item._id === project._id ? { ...item, featured: project.featured } : item
+      )));
+      toast.error(getApiErrorMessage(error, 'Featured status could not be updated.'), {
+        toastId: `featured-error-${project._id}`,
+      });
+    } finally {
+      setTogglingFeatured((current) => {
+        const next = new Set(current);
+        next.delete(project._id);
+        return next;
+      });
     }
   };
 
@@ -120,14 +156,14 @@ const ProjectManager = () => {
                 <label className="flex items-center gap-1.5 text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-2">
                   <FaFilter size={9} /> Status
                 </label>
-                <div className="flex gap-2">
-                  {[{ val: '', label: 'All' }, { val: 'Ongoing', label: 'Ongoing' }, { val: 'Finished', label: 'Finished' }].map(opt => (
+                <div className="flex flex-wrap gap-2">
+                  {[{ value: '', label: 'All' }, ...PROJECT_STATUSES].map(opt => (
                     <button
-                      key={opt.val}
-                      onClick={() => setFilter(opt.val)}
+                      key={opt.value}
+                      onClick={() => setFilter(opt.value)}
                       className={[
-                        'px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border flex-1',
-                        filter === opt.val
+                        'min-w-[110px] flex-1 rounded-xl border px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all',
+                        filter === opt.value
                           ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
                           : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10 border-transparent',
                       ].join(' ')}
@@ -241,9 +277,19 @@ const ProjectManager = () => {
 
                   {/* Featured */}
                   <div className="hidden md:flex md:col-span-1 justify-center">
-                    {project.featured
-                      ? <FaStar className="text-amber-400" size={13} />
-                      : <FaRegStar className="text-white/10" size={13} />}
+                    <button
+                      type="button"
+                      onClick={() => handleFeaturedToggle(project)}
+                      disabled={togglingFeatured.has(project._id)}
+                      aria-pressed={Boolean(project.featured)}
+                      aria-label={project.featured ? `Remove ${project.projectName} from featured projects` : `Add ${project.projectName} to featured projects`}
+                      title={project.featured ? 'Remove from featured projects' : 'Add to featured projects'}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:scale-110 hover:bg-amber-400/10 focus:outline-none focus:ring-2 focus:ring-amber-400/50 disabled:cursor-wait disabled:opacity-50"
+                    >
+                      {project.featured
+                        ? <FaStar className="text-amber-400" size={15} />
+                        : <FaRegStar className="text-white/20" size={15} />}
+                    </button>
                   </div>
 
                   {/* Actions */}

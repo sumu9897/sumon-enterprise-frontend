@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../services/api';
+import { getProjectStatus } from '../constants/projectStatuses';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import {
@@ -224,7 +225,7 @@ const ProjectDetail = () => {
                 </div>
               </div>
               <span className="fu d3 text-[10px] font-bold tracking-widest uppercase px-3 py-2 rounded-sm flex-shrink-0"
-                style={{ background:project.status==='Ongoing'?'rgba(201,168,76,.9)':'rgba(34,197,94,.85)', color:'white' }}>
+                style={{ background:getProjectStatus(project.status).color, color:'white' }}>
                 {project.status}
               </span>
             </div>

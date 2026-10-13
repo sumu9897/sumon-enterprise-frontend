@@ -2,6 +2,7 @@ import { useState, useEffect, memo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api, { getApiErrorMessage } from '../../services/api';
+import { PROJECT_STATUSES } from '../../constants/projectStatuses';
 import {
   FaSave, FaTimes, FaMapMarkerAlt, FaInfoCircle,
   FaImage, FaBuilding, FaClipboardList, FaCheckCircle,
@@ -575,8 +576,9 @@ const ProjectForm = () => {
                     onChange={handleChange}
                     className="form-select"
                   >
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Finished">Finished</option>
+                    {PROJECT_STATUSES.map((status) => (
+                      <option key={status.value} value={status.value}>{status.label}</option>
+                    ))}
                   </select>
                 </Field>
                 <Field label="Start Date" required>

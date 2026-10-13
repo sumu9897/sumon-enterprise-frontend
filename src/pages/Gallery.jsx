@@ -5,6 +5,7 @@ import api from '../services/api';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaImage, FaBuilding, FaTimes } from 'react-icons/fa';
+import { PROJECT_STATUSES, getProjectStatus } from '../constants/projectStatuses';
 
 /* ── useDarkMode ── */
 const useDarkMode = () => {
@@ -103,8 +104,7 @@ const Gallery = () => {
 
   const filterButtons = [
     { value: 'all', label: 'All Projects' },
-    { value: 'Ongoing', label: 'Ongoing' },
-    { value: 'Finished', label: 'Finished' },
+    ...PROJECT_STATUSES,
   ];
 
   return (
@@ -260,7 +260,7 @@ const Gallery = () => {
             >
               {!loading && images.length > 0
                 ? `Browse through ${images.length} images from our construction projects`
-                : 'Browse through our collection of completed and ongoing construction projects'}
+                : 'Browse projects across every stage of our construction pipeline'}
             </p>
           </div>
         </section>
@@ -369,9 +369,7 @@ const Gallery = () => {
                         <span
                           className="inline-block text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm mt-2"
                           style={{
-                            background: image.status === 'Ongoing'
-                              ? 'rgba(201,168,76,0.9)'
-                              : 'rgba(34,197,94,0.85)',
+                            background: getProjectStatus(image.status).color,
                             color: 'white',
                           }}
                         >

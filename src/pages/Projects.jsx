@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
 import { toast } from "react-toastify";
+import { PROJECT_STATUSES, getProjectStatus } from '../constants/projectStatuses';
 import {
   FaSearch,
   FaFilter,
@@ -245,8 +246,9 @@ const Projects = () => {
                   className="filter-input"
                 >
                   <option value="">All Status</option>
-                  <option value="Ongoing">Ongoing</option>
-                  <option value="Finished">Finished</option>
+                  {PROJECT_STATUSES.map((status) => (
+                    <option key={status.value} value={status.value}>{status.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -392,10 +394,7 @@ const Projects = () => {
                       <span
                         className="absolute top-3 right-3 text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-sm"
                         style={{
-                          background:
-                            project.status === "Ongoing"
-                              ? "rgba(201,168,76,.92)"
-                              : "rgba(34,197,94,.85)",
+                          background: getProjectStatus(project.status).color,
                           color: "white",
                         }}
                       >

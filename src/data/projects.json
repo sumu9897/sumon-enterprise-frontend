@@ -67,7 +67,7 @@
     "description": "(G+9) Residential 6800sft per floor",
     "specifications": { "floors": "G+9", "floorArea": "6800sft per floor", "type": "Residential", "finish": null },
     "address": { "plot": null, "road": null, "block": null, "area": "Darmosagor Par", "city": "Comilla" },
-    "status": "Finished", "startDate": "2010", "finishDate": "2013", "images": []
+    "status": "Completed", "startDate": "2010", "finishDate": "2013", "images": []
   },
   {
     "id": 7,
@@ -77,7 +77,7 @@
     "description": "(G+9) Residential 7200sft per floor Animation Fair-Face",
     "specifications": { "floors": "G+9", "floorArea": "7200sft per floor", "type": "Residential", "finish": "Animation Fair-Face" },
     "address": { "plot": null, "road": null, "block": null, "area": "Darmosagor Par", "city": "Comilla" },
-    "status": "Finished", "startDate": "2023", "finishDate": "2026", "images": []
+    "status": "Completed", "startDate": "2023", "finishDate": "2026", "images": []
   },
   {
     "id": 8,
@@ -87,7 +87,7 @@
     "description": "(G+9) Residential 2300sft per floor",
     "specifications": { "floors": "G+9", "floorArea": "2300sft per floor", "type": "Residential", "finish": null },
     "address": { "plot": "191/C", "road": "Sher E Bangla Road", "block": null, "area": "Masdair, Fatulla", "city": "Narayangonj" },
-    "status": "Finished", "startDate": "2022", "finishDate": "2025", "images": []
+    "status": "Completed", "startDate": "2022", "finishDate": "2025", "images": []
   },
   {
     "id": 9,
@@ -118,7 +118,7 @@
     "description": "G+5 stores building, 18000sft per floor",
     "specifications": { "floors": "G+5", "floorArea": "18000sft per floor", "type": "Commercial / Industrial", "finish": null },
     "address": { "plot": "2981 & 2982", "road": "17", "block": "M", "area": "Bashundhara R/A", "city": "Dhaka" },
-    "status": "Finished", "startDate": "2024", "finishDate": null, "images": []
+    "status": "Completed", "startDate": "2024", "finishDate": null, "images": []
   },
   {
     "id": 12,
@@ -128,7 +128,7 @@
     "description": "One Basement, Ground Floor and 5th Floor Residential 2000sft per floor Full Fair-Face",
     "specifications": { "floors": "1B+G+5", "floorArea": "2000sft per floor", "type": "Residential", "finish": "Full Fair-Face" },
     "address": { "plot": null, "road": null, "block": null, "area": "Ashulia, Savar", "city": "Dhaka" },
-    "status": "Finished", "startDate": "2020", "finishDate": "2022", "images": []
+    "status": "Completed", "startDate": "2020", "finishDate": "2022", "images": []
   },
   {
     "id": 13,
@@ -138,7 +138,7 @@
     "description": "One Basement, Ground Floor and 9th Floor Residential 7000sft per floor",
     "specifications": { "floors": "1B+G+9", "floorArea": "7000sft per floor", "type": "Residential", "finish": null },
     "address": { "plot": null, "road": null, "block": null, "area": "Nawnadigir Par", "city": "Comilla" },
-    "status": "Finished", "startDate": "2017", "finishDate": "2020", "images": []
+    "status": "Completed", "startDate": "2017", "finishDate": "2020", "images": []
   },
   {
     "id": 14,
@@ -148,7 +148,7 @@
     "description": "One Basement, Ground Floor and 9th Floor Residential 8000sft per floor",
     "specifications": { "floors": "1B+G+9", "floorArea": "8000sft per floor", "type": "Residential", "finish": null },
     "address": { "plot": null, "road": null, "block": null, "area": "Talpukur Par", "city": "Comilla" },
-    "status": "Finished", "startDate": "2016", "finishDate": "2022", "images": []
+    "status": "Completed", "startDate": "2016", "finishDate": "2022", "images": []
   },
   {
     "id": 15,

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { getProjectStatus } from '../constants/projectStatuses';
 import {
   FaArrowRight, FaBuilding, FaTools, FaHome, FaAward,
   FaHandshake, FaChartLine, FaCheckCircle, FaHammer,
@@ -354,7 +355,7 @@ const Home = () => {
                         </div>
                       )}
                       <span className="absolute top-3 right-3 text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-sm"
-                        style={{ background: project.status==='Ongoing' ? 'rgba(201,168,76,.92)' : 'rgba(34,197,94,.85)', color:'white' }}>
+                        style={{ background: getProjectStatus(project.status).color, color:'white' }}>
                         {project.status}
                       </span>
                     </div>

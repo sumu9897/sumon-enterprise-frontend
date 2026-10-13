@@ -58,7 +58,7 @@ const StatusBadge = ({ status }) => {
 const Dashboard = () => {
   const { admin } = useAuth();
   const [stats, setStats] = useState({
-    totalProjects: 0, ongoingProjects: 0, finishedProjects: 0,
+    totalProjects: 0, activeProjects: 0, completedProjects: 0,
     totalInquiries: 0, unreadInquiries: 0,
   });
   const [recentInquiries, setRecentInquiries] = useState([]);
@@ -79,8 +79,8 @@ const Dashboard = () => {
       const inquiries = inqRes.data.data || [];
       setStats({
         totalProjects:    projects.length,
-        ongoingProjects:  projects.filter(p => p.status === 'Ongoing').length,
-        finishedProjects: projects.filter(p => p.status === 'Finished').length,
+        activeProjects:    projects.filter(p => p.status !== 'Completed').length,
+        completedProjects: projects.filter(p => p.status === 'Completed').length,
         totalInquiries:   inqStats.total || 0,
         unreadInquiries:  inqStats.unread || 0,
       });
@@ -96,15 +96,15 @@ const Dashboard = () => {
 
   const statCards = [
     { title: 'Total Projects',   value: stats.totalProjects,    icon: <FaProjectDiagram />, to: '/admin/projects',                color: 'blue'   },
-    { title: 'Ongoing',          value: stats.ongoingProjects,  icon: <FaClock />,          to: '/admin/projects?status=Ongoing', color: 'amber'  },
-    { title: 'Finished',         value: stats.finishedProjects, icon: <FaCheckCircle />,    to: '/admin/projects?status=Finished',color: 'green'  },
+    { title: 'Active Pipeline',  value: stats.activeProjects,    icon: <FaClock />,          to: '/admin/projects',                  color: 'amber'  },
+    { title: 'Completed',        value: stats.completedProjects, icon: <FaCheckCircle />,    to: '/admin/projects?status=Completed',color: 'green'  },
     { title: 'Total Inquiries',  value: stats.totalInquiries,   icon: <FaEnvelope />,       to: '/admin/inquiries',               color: 'purple' },
     { title: 'Unread Inquiries', value: stats.unreadInquiries,  icon: <FaEnvelopeOpen />,   to: '/admin/inquiries?status=unread', color: 'red'    },
   ];
 
   const glance = [
-    { label: 'Active',    val: stats.ongoingProjects,  barColor: 'bg-amber-500/60',   textColor: 'text-amber-400',   pct: stats.totalProjects   ? stats.ongoingProjects  / stats.totalProjects   * 100 : 0 },
-    { label: 'Completed', val: stats.finishedProjects, barColor: 'bg-emerald-500/60', textColor: 'text-emerald-400', pct: stats.totalProjects   ? stats.finishedProjects / stats.totalProjects   * 100 : 0 },
+    { label: 'Active',    val: stats.activeProjects,    barColor: 'bg-amber-500/60',   textColor: 'text-amber-400',   pct: stats.totalProjects   ? stats.activeProjects    / stats.totalProjects * 100 : 0 },
+    { label: 'Completed', val: stats.completedProjects, barColor: 'bg-emerald-500/60', textColor: 'text-emerald-400', pct: stats.totalProjects   ? stats.completedProjects / stats.totalProjects * 100 : 0 },
     { label: 'Pending',   val: stats.unreadInquiries,  barColor: 'bg-red-500/60',     textColor: 'text-red-400',     pct: stats.totalInquiries  ? Math.min(stats.unreadInquiries / stats.totalInquiries * 100, 100) : 0 },
   ];
 
