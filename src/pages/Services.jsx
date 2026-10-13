@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaBuilding, FaTools, FaHammer, FaHome, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import useSiteContent from '../hooks/useSiteContent';
 
 const useDarkMode = () => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -14,6 +15,7 @@ const useDarkMode = () => {
 
 const Services = () => {
   const dark = useDarkMode();
+  const siteContent = useSiteContent();
 
   const bg    = dark ? '#0F1117' : '#F8F5EF';
   const card  = dark ? '#1C1E2A' : '#FFFFFF';
@@ -23,7 +25,7 @@ const Services = () => {
   const gold  = '#C9A84C';
   const dark2 = dark ? '#13151E' : '#1A1A2E';
 
-  const services = [
+  const defaultServices = [
     {
       icon: <FaBuilding />,
       title: 'Main Contractor',
@@ -85,6 +87,11 @@ const Services = () => {
       image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800',
     },
   ];
+
+  const serviceIcons = [<FaBuilding />, <FaTools />, <FaHammer />, <FaHome />];
+  const services = siteContent?.services?.length
+    ? siteContent.services.map((service, index) => ({ ...service, image: service.imageUrl, icon: serviceIcons[index % serviceIcons.length] }))
+    : defaultServices;
 
   const process = [
     { step:'01', title:'Consultation', desc:'Initial meeting to understand your requirements, scope, and budget.' },

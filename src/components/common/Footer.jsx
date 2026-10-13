@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { FaEnvelope, FaFacebookF, FaHardHat, FaMapMarkerAlt, FaPhoneAlt } from 'react-icons/fa';
+import useSiteContent from '../../hooks/useSiteContent';
 
 const links = [
   { to: '/about', label: 'About us' },
@@ -11,7 +12,12 @@ const links = [
 
 const services = ['Main contracting', 'Subcontracting', 'Repair & renovation', 'Apartment development'];
 
-const Footer = () => (
+const Footer = () => {
+  const contact = useSiteContent()?.contact || {};
+  const phone = contact.phone || '+880 1789-779059';
+  const email = contact.email || 'sumonconstruction2024@gmail.com';
+  const address = contact.address || 'Dhaka, Bangladesh';
+  return (
   <footer className="border-t border-white/10 bg-[#0F1117] text-white/60">
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
       <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.35fr_0.8fr_1fr_1.2fr]">
@@ -27,7 +33,7 @@ const Footer = () => (
             Trusted construction and development services across Bangladesh since 2000, built on quality, accountability, and lasting client relationships.
           </p>
           <a
-            href="https://facebook.com"
+            href={contact.facebookUrl || 'https://facebook.com'}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-primary hover:text-primary"
@@ -54,9 +60,9 @@ const Footer = () => (
         <address className="not-italic">
           <h2 className="text-sm font-bold uppercase tracking-wider text-white">Contact</h2>
           <div className="mt-5 space-y-4 text-sm">
-            <p className="flex items-start gap-3"><FaMapMarkerAlt className="mt-1 shrink-0 text-primary" /><span>Dhaka, Bangladesh</span></p>
-            <a className="flex items-center gap-3 transition hover:text-primary" href="tel:+8801789779059"><FaPhoneAlt className="shrink-0 text-primary" /><span>+880 1789-779059</span></a>
-            <a className="flex items-start gap-3 break-all transition hover:text-primary" href="mailto:sumonconstruction2024@gmail.com"><FaEnvelope className="mt-1 shrink-0 text-primary" /><span>sumonconstruction2024@gmail.com</span></a>
+            <p className="flex items-start gap-3"><FaMapMarkerAlt className="mt-1 shrink-0 text-primary" /><span>{address}</span></p>
+            <a className="flex items-center gap-3 transition hover:text-primary" href={`tel:${phone.replace(/[^+\d]/g, '')}`}><FaPhoneAlt className="shrink-0 text-primary" /><span>{phone}</span></a>
+            <a className="flex items-start gap-3 break-all transition hover:text-primary" href={`mailto:${email}`}><FaEnvelope className="mt-1 shrink-0 text-primary" /><span>{email}</span></a>
           </div>
         </address>
       </div>
@@ -68,6 +74,7 @@ const Footer = () => (
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 export default Footer;

@@ -5,6 +5,7 @@ import {
   FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock,
   FaWhatsapp, FaFacebook, FaArrowRight, FaPaperPlane
 } from 'react-icons/fa';
+import useSiteContent from '../hooks/useSiteContent';
 
 /* ── useDarkMode ── */
 const useDarkMode = () => {
@@ -23,6 +24,7 @@ const useDarkMode = () => {
 
 const Contact = () => {
   const dark = useDarkMode();
+  const siteContent = useSiteContent();
 
   const bg     = dark ? '#0F1117' : '#F8F5EF';
   const card   = dark ? '#1C1E2A' : '#FFFFFF';
@@ -113,42 +115,49 @@ const Contact = () => {
     }
   };
 
+  const managedContact = siteContent?.contact || {};
+  const phone = managedContact.phone || '+880 1789779059';
+  const whatsapp = managedContact.whatsapp || phone;
+  const email = managedContact.email || 'sumonconstruction2024@gmail.com';
+  const address = managedContact.address || 'Dhaka, Bangladesh';
+  const phoneHref = phone.replace(/[^+\d]/g, '');
+  const whatsappHref = whatsapp.replace(/\D/g, '');
   const contactItems = [
     {
       icon: <FaPhone />,
       label: 'Call Us',
-      value: '+880 1789779059',
+      value: phone,
       note: 'Sat – Thu, 8AM – 6PM',
-      href: 'tel:+8801789779059',
+      href: `tel:${phoneHref}`,
       cta: 'Call Now',
     },
     {
       icon: <FaWhatsapp />,
       label: 'WhatsApp',
-      value: '+880 1789779059',
+      value: whatsapp,
       note: 'Quick replies on WhatsApp',
-      href: 'https://wa.me/8801789779059',
+      href: `https://wa.me/${whatsappHref}`,
       cta: 'Message Us',
     },
     {
       icon: <FaEnvelope />,
       label: 'Email',
-      value: 'sumonconstruction2024@gmail.com',
+      value: email,
       note: 'We reply within 24 hours',
-      href: 'mailto:sumonconstruction2024@gmail.com',
+      href: `mailto:${email}`,
       cta: 'Send Email',
     },
     {
       icon: <FaMapMarkerAlt />,
       label: 'Office',
-      value: 'Dhaka, Bangladesh',
+      value: address,
       note: 'Visit us by appointment',
-      href: 'https://maps.google.com/?q=Dhaka,Bangladesh',
+      href: `https://maps.google.com/?q=${encodeURIComponent(address)}`,
       cta: 'Get Directions',
     },
   ];
 
-  const officeHours = [
+  const defaultOfficeHours = [
     { day: 'Saturday',  hours: '8:00 AM – 5:00 PM', open: true  },
     { day: 'Sunday',    hours: '8:00 AM – 5:00 PM', open: true  },
     { day: 'Monday',    hours: '8:00 AM – 5:00 PM', open: true  },
@@ -157,6 +166,7 @@ const Contact = () => {
     { day: 'Thursday',  hours: '8:00 AM – 5:00 PM', open: true  },
     { day: 'Friday',    hours: '8:00 AM – 5:00 PM', open: true  },
   ];
+  const officeHours = managedContact.officeHours?.length ? managedContact.officeHours : defaultOfficeHours;
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
@@ -537,7 +547,7 @@ const Contact = () => {
               >
                 <iframe
                   title="Dhaka Bangladesh"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233668.3229159581!2d90.27923706812498!3d23.780573000000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka%2C%20Bangladesh!5e0!3m2!1sen!2sbd!4v1700000000000!5m2!1sen!2sbd"
+                  src={managedContact.mapEmbedUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d233668.3229159581!2d90.27923706812498!3d23.780573000000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8b087026b81%3A0x8fa563bbdd5904c2!2sDhaka%2C%20Bangladesh!5e0!3m2!1sen!2sbd!4v1700000000000!5m2!1sen!2sbd'}
                   width="100%" height="100%"
                   style={{
                     border: 0,
@@ -552,7 +562,7 @@ const Contact = () => {
                 >
                   <FaMapMarkerAlt style={{ color: gold }} />
                   
-                  Dhaka, Bangladesh
+                  {address}
                 </div>
               </div>
 
@@ -633,7 +643,7 @@ const Contact = () => {
               </div>
             </div>
             <a
-              href="https://facebook.com"
+              href={managedContact.facebookUrl || 'https://facebook.com'}
               target="_blank"
               rel="noreferrer"
               className="btn-outline-gold flex-shrink-0"
@@ -665,14 +675,14 @@ const Contact = () => {
               25+ years of expertise · 80+ completed projects · Trusted across Bangladesh
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <a href="tel:+8801789779059" className="btn-gold">
+              <a href={`tel:${phoneHref}`} className="btn-gold">
                 <FaPhone /> Call Us Now
               </a>
-              <a href="mailto:sumonconstruction2024@gmail.com" className="btn-outline-gold">
+              <a href={`mailto:${email}`} className="btn-outline-gold">
                 <FaEnvelope /> Email Us
               </a>
               <a
-                href="https://wa.me/8801789779059"
+                href={`https://wa.me/${whatsappHref}`}
                 target="_blank" rel="noreferrer"
                 className="btn-outline-gold"
                 style={{ borderColor: '#25D366', color: '#25D366' }}

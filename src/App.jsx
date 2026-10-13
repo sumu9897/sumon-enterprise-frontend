@@ -21,10 +21,15 @@ const Gallery = lazy(() => import('./pages/Gallery'));
 const Contact = lazy(() => import('./pages/Contact'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const AdminLogin = lazy(() => import('./pages/admin/Login'));
+const ForgotPassword = lazy(() => import('./pages/admin/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/admin/ResetPassword'));
+const AuthMessage = lazy(() => import('./pages/admin/AuthMessage'));
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
 const ProjectManager = lazy(() => import('./pages/admin/ProjectManager'));
 const ProjectForm = lazy(() => import('./pages/admin/ProjectForm'));
 const InquiryManager = lazy(() => import('./pages/admin/InquiryManager'));
+const AdminSettings = lazy(() => import('./pages/admin/Settings'));
+const ContentManager = lazy(() => import('./pages/admin/ContentManager'));
 
 const protectedPage = (element) => <PrivateRoute>{element}</PrivateRoute>;
 
@@ -48,11 +53,17 @@ const RouterContent = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/access-denied" element={<AuthMessage tone="warning" title="Access denied" message="Your administrator account does not have permission to open this area." />} />
+            <Route path="/admin/session-expired" element={<AuthMessage tone="warning" title="Session expired" message="For your security, this session is no longer valid. Sign in again to continue." />} />
             <Route path="/admin/dashboard" element={protectedPage(<AdminDashboard />)} />
             <Route path="/admin/projects" element={protectedPage(<ProjectManager />)} />
             <Route path="/admin/projects/new" element={protectedPage(<ProjectForm />)} />
             <Route path="/admin/projects/edit/:id" element={protectedPage(<ProjectForm />)} />
             <Route path="/admin/inquiries" element={protectedPage(<InquiryManager />)} />
+            <Route path="/admin/settings" element={protectedPage(<AdminSettings />)} />
+            <Route path="/admin/content" element={protectedPage(<ContentManager />)} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

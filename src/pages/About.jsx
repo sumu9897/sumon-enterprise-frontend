@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { FaHistory, FaCheckCircle, FaUsers, FaAward, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import useSiteContent from '../hooks/useSiteContent';
 
 const useDarkMode = () => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -35,6 +36,7 @@ const StatNum = ({ end, suffix, start }) => {
 
 const About = () => {
   const dark = useDarkMode();
+  const siteContent = useSiteContent();
   const [statsVis, setStatsVis] = useState(false);
   const statsRef = useRef(null);
 
@@ -55,7 +57,7 @@ const About = () => {
     return () => obs.disconnect();
   }, []);
 
-  const milestones = [
+  const defaultMilestones = [
     { year:'2000', event:'Company Established', desc:'Started with a vision to deliver quality construction in Bangladesh.' },
     { year:'2005', event:'10th Project Completed', desc:'Reached our first major milestone with residential projects.' },
     { year:'2010', event:'Expanded to Major Cities', desc:'Extended operations to Dhaka, Comilla, and Narayangonj.' },
@@ -64,11 +66,25 @@ const About = () => {
     { year:'2025', event:'25 Years of Excellence', desc:'Celebrating a quarter century of building Bangladesh\'s future.' },
   ];
 
-  const values = [
+  const defaultValues = [
     { icon:<FaCheckCircle />, title:'Quality First',           desc:'We never compromise on the quality of materials and workmanship.' },
     { icon:<FaUsers />,       title:'Client Satisfaction',     desc:'Our clients\' success and satisfaction is our top priority.' },
     { icon:<FaAward />,       title:'Professional Excellence', desc:'We maintain the highest standards of professionalism on every project.' },
     { icon:<FaHistory />,     title:'Timely Delivery',         desc:'We commit to deadlines and consistently deliver projects on schedule.' },
+  ];
+
+  const about = siteContent?.about;
+  const milestones = about?.milestones?.length
+    ? about.milestones.map((item) => ({ year: item.year, event: item.title, desc: item.description }))
+    : defaultMilestones;
+  const valueIcons = [<FaCheckCircle />, <FaUsers />, <FaAward />, <FaHistory />];
+  const values = about?.values?.length
+    ? about.values.map((item, index) => ({ ...item, desc: item.description, icon: valueIcons[index % valueIcons.length] }))
+    : defaultValues;
+  const storyParagraphs = about?.paragraphs?.length ? about.paragraphs : [
+    "Founded in 2000, M/S Sumon Enterprise has grown from a small construction firm to one of Bangladesh's most trusted contractors. With over 25 years of experience, we have successfully completed more than 50 projects across the country.",
+    'Our journey began with a simple vision: to provide high-quality construction services that combine traditional craftsmanship with modern technology. Today, we are proud to have built lasting relationships with clients who trust us with their most important projects.',
+    'From residential apartments to commercial buildings and industrial facilities, our portfolio showcases our versatility and unwavering commitment to excellence.',
   ];
 
   const stats = [
@@ -117,13 +133,13 @@ const About = () => {
             style={{ backgroundImage:'url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600")', backgroundSize:'cover', backgroundPosition:'center' }} />
           <div className="absolute left-0 top-0 h-full w-1" style={{ background:`linear-gradient(180deg,transparent,${gold},transparent)` }} />
           <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center pb-20">
-            <span className="section-label fade-up d1">Our Story</span>
+            <span className="section-label fade-up d1">{about?.eyebrow || 'Our Story'}</span>
             <div className="gold-divider center fade-up d1" />
             <h1 className="serif font-black text-white fade-up d2" style={{ fontSize:'clamp(2.5rem,6vw,4rem)', lineHeight:1.1 }}>
-              About <span style={{ color:gold }}>M/S Sumon Enterprise</span>
+              {about?.title || <>About <span style={{ color:gold }}>M/S Sumon Enterprise</span></>}
             </h1>
             <p className="mt-4 text-base max-w-2xl mx-auto fade-up d3" style={{ color:'rgba(255,255,255,.5)' }}>
-              Building Bangladesh's future with 25+ years of construction excellence
+              {about?.subtitle || "Building Bangladesh's future with 25+ years of construction excellence"}
             </p>
           </div>
         </section>
@@ -135,12 +151,10 @@ const About = () => {
               <span className="section-label">Who We Are</span>
               <div className="gold-divider" />
               <h2 className="serif font-bold mb-6" style={{ fontSize:'clamp(1.8rem,4vw,2.5rem)', color:text }}>
-                25 Years of Building Trust
+                {about?.heading || '25 Years of Building Trust'}
               </h2>
               <div className="space-y-4 text-sm leading-relaxed" style={{ color:sub }}>
-                <p>Founded in 2000, <strong style={{ color:gold }}>M/S Sumon Enterprise</strong> has grown from a small construction firm to one of Bangladesh's most trusted contractors. With over 25 years of experience, we have successfully completed more than 50 projects across the country.</p>
-                <p>Our journey began with a simple vision: to provide high-quality construction services that combine traditional craftsmanship with modern technology. Today, we are proud to have built lasting relationships with clients who trust us with their most important projects.</p>
-                <p>From residential apartments to commercial buildings and industrial facilities, our portfolio showcases our versatility and unwavering commitment to excellence.</p>
+                {storyParagraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
               </div>
               <div className="mt-8">
                 <Link to="/projects" className="btn-gold">
@@ -150,7 +164,7 @@ const About = () => {
             </div>
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800"
+                src={about?.imageUrl || 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800'}
                 alt="Construction site"
                 className="w-full h-96 object-cover rounded-sm"
                 style={{ border:`4px solid ${bdr}` }}

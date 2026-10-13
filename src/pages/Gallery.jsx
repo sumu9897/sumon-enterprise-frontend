@@ -3,7 +3,8 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import api from '../services/api';
 import { toast } from 'react-toastify';
-import { FaImage, FaBuilding, FaTimes } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaArrowRight, FaImage, FaBuilding, FaTimes } from 'react-icons/fa';
 
 /* ── useDarkMode ── */
 const useDarkMode = () => {
@@ -44,9 +45,28 @@ const Gallery = () => {
   const loadImages = async () => {
     try {
       setLoading(true);
-      // Fetch all projects with high limit to get all images
-      const response = await api.get('/projects?limit=1000');
-      const projects = response.data.data;
+      const [contentResult, projectResult] = await Promise.allSettled([
+        api.get('/site-content'),
+        api.get('/projects?limit=100'),
+      ]);
+      const managedGallery = contentResult.status === 'fulfilled'
+        ? contentResult.value.data.data?.gallery || []
+        : [];
+      if (managedGallery.length > 0) {
+        setImages(managedGallery.map((item) => ({
+          url: item.imageUrl,
+          caption: item.caption,
+          projectName: item.project.projectName,
+          projectId: item.project._id,
+          slug: item.project.slug,
+          status: item.project.status,
+          company: item.project.company,
+          location: [item.project.address?.area, item.project.address?.city].filter(Boolean).join(', '),
+        })));
+        return;
+      }
+      if (projectResult.status === 'rejected') throw projectResult.reason;
+      const projects = projectResult.value.data.data || [];
 
       // Extract all images from every project
       const allImages = [];
@@ -161,6 +181,8 @@ const Gallery = () => {
         .gallery-item:hover .gallery-overlay {
           opacity: 1;
         }
+        .gallery-details-link { transform: translateY(8px); transition: transform .3s ease; }
+        .gallery-item:hover .gallery-details-link, .gallery-item:focus-within .gallery-details-link { transform: translateY(0); }
 
         .spinner {
           width: 50px; height: 50px;
@@ -317,21 +339,19 @@ const Gallery = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredImages.map((image, index) => (
-                <div
+                <article
                   key={index}
                   className="gallery-item"
-                  onClick={() => {
-                    setPhotoIndex(index);
-                    setLightboxOpen(true);
-                  }}
                 >
                   {image.url ? (
                     <>
+                      <button type="button" className="absolute inset-0 h-full w-full" aria-label={`Open ${image.projectName} image`} onClick={() => { setPhotoIndex(index); setLightboxOpen(true); }}>
                       <img
                         src={image.url}
                         alt={image.projectName}
                         loading="lazy"
                       />
+                      </button>
                       <div className="gallery-overlay">
                         <h3 className="text-white font-bold text-sm mb-1 line-clamp-2">
                           {image.projectName}
@@ -357,6 +377,7 @@ const Gallery = () => {
                         >
                           {image.status}
                         </span>
+                        {image.slug && <Link to={`/projects/${image.slug}`} onClick={(event) => event.stopPropagation()} className="gallery-details-link relative z-10 mt-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white hover:text-[#E8C96A]">View project details <FaArrowRight /></Link>}
                       </div>
                     </>
                   ) : (
@@ -370,7 +391,7 @@ const Gallery = () => {
                       </span>
                     </div>
                   )}
-                </div>
+                </article>
               ))}
             </div>
           )}

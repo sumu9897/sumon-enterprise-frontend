@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import {
   FaProjectDiagram, FaPlus, FaEnvelope, FaEye,
   FaSignOutAlt, FaTachometerAlt, FaArrowRight,
+  FaBars, FaCog, FaEdit, FaTimes,
 } from 'react-icons/fa';
 
 /* ─── Nav Item ────────────────────────────────────────────── */
@@ -66,6 +68,20 @@ const SidebarSection = ({ label }) => (
 /* ─── Sidebar ─────────────────────────────────────────────── */
 const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
   const { admin, logout } = useAuth();
+  const location = useLocation();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => setOpen(false), [location.pathname]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (event) => event.key === 'Escape' && setOpen(false);
+    document.addEventListener('keydown', close);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', close);
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   const initials = (admin?.name || 'A')
     .split(' ')
@@ -80,7 +96,12 @@ const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
   };
 
   return (
-    <aside className="w-64 min-h-screen bg-[#111320] border-r border-white/5 flex flex-col fixed left-0 top-0 bottom-0 z-30 overflow-hidden">
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="fixed left-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-[#111320] text-amber-400 shadow-xl md:hidden" aria-label="Open admin navigation" aria-expanded={open}>
+        <FaBars />
+      </button>
+      {open && <button type="button" aria-label="Close admin navigation" className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)} />}
+      <aside className={`w-64 min-h-screen bg-[#111320] border-r border-white/5 flex flex-col fixed left-0 top-0 bottom-0 z-50 overflow-hidden transition-transform duration-300 md:z-30 md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
 
       {/* Logo */}
       <div className="px-6 py-6 border-b border-white/5 shrink-0">
@@ -92,6 +113,7 @@ const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
             <p className="text-white font-bold text-sm leading-none">AdminPanel</p>
             <p className="text-white/30 text-[10px] mt-0.5 uppercase tracking-widest">Studio CMS</p>
           </div>
+          <button type="button" onClick={() => setOpen(false)} className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg text-white/40 hover:bg-white/5 hover:text-white md:hidden" aria-label="Close admin navigation"><FaTimes /></button>
         </div>
       </div>
 
@@ -139,6 +161,8 @@ const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
         />
 
         <SidebarSection label="Site" />
+        <NavItem to="/admin/content" icon={<FaEdit size={13} />} label="Website Content" isNew />
+        <NavItem to="/admin/settings" icon={<FaCog size={13} />} label="Settings & Security" />
         <NavItem
           to="/"
           icon={<FaEye size={13} />}
@@ -159,7 +183,8 @@ const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
           <span>Logout</span>
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

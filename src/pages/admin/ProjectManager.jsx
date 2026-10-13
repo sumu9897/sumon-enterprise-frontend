@@ -69,10 +69,10 @@ const ProjectManager = () => {
     <div className="flex min-h-screen bg-[#0D0F18] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <AdminSidebar unreadCount={0} projectCount={projects.length} />
 
-      <main className="ml-64 flex-1 min-w-0">
+      <main className="min-w-0 flex-1 pt-16 md:ml-64 md:pt-0">
 
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-[#0D0F18]/80 backdrop-blur-xl border-b border-white/5 px-8 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-white/5 bg-[#0D0F18]/80 px-4 py-4 backdrop-blur-xl sm:px-8">
           <div>
             <h1 className="font-bold text-xl text-white" style={{ fontFamily: 'Georgia, serif' }}>
               Manage <span className="text-amber-400">Projects</span>
@@ -89,7 +89,7 @@ const ProjectManager = () => {
           </Link>
         </header>
 
-        <div className="px-8 py-6 space-y-5">
+        <div className="space-y-5 px-4 py-6 sm:px-8">
 
           {/* Filters */}
           <div className="bg-[#111320] border border-white/5 rounded-2xl px-5 py-4">

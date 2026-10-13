@@ -112,10 +112,10 @@ const Dashboard = () => {
     <div className="flex min-h-screen bg-[#0D0F18] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <AdminSidebar unreadCount={stats.unreadInquiries} projectCount={stats.totalProjects} />
 
-      <main className="ml-64 flex-1 min-w-0">
+      <main className="min-w-0 flex-1 pt-16 md:ml-64 md:pt-0">
 
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-[#0D0F18]/80 backdrop-blur-xl border-b border-white/5 px-8 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/5 bg-[#0D0F18]/80 px-4 py-4 backdrop-blur-xl sm:px-8">
           <div>
             <h1 className="font-bold text-xl text-white" style={{ fontFamily: 'Georgia, serif' }}>
               Dashboard <span className="text-amber-400">Overview</span>
@@ -140,7 +140,7 @@ const Dashboard = () => {
           </div>
         </header>
 
-        <div className="px-8 py-6 space-y-6">
+        <div className="space-y-6 px-4 py-6 sm:px-8">
 
           {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

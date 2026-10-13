@@ -11,6 +11,15 @@ const metadata = {
   '/projects': ['Construction Projects', 'Browse ongoing and completed construction projects delivered across Bangladesh.'],
   '/gallery': ['Project Gallery', 'View selected construction work and completed project photography.'],
   '/contact': ['Request a Construction Quote', 'Contact M/S Sumon Enterprise to discuss your construction project or request a quote.'],
+  '/admin/login': ['Administrator Sign In', 'Secure administrator access for M/S Sumon Enterprise.'],
+  '/admin/forgot-password': ['Recover Administrator Access', 'Request a secure administrator password recovery link.'],
+  '/admin/reset-password': ['Reset Administrator Password', 'Choose a new secure administrator password.'],
+  '/admin/dashboard': ['Admin Dashboard', 'Manage projects and inquiries for M/S Sumon Enterprise.'],
+  '/admin/projects': ['Manage Projects', 'Manage the M/S Sumon Enterprise project portfolio.'],
+  '/admin/projects/new': ['Add Project', 'Add a project to the M/S Sumon Enterprise portfolio.'],
+  '/admin/inquiries': ['Manage Inquiries', 'Review and manage customer inquiries.'],
+  '/admin/settings': ['Administrator Settings', 'Manage administrator account security.'],
+  '/admin/content': ['Website Content Manager', 'Manage public website content and project-linked gallery images.'],
 };
 
 const setMeta = (selector, attribute, value) => {
@@ -25,8 +34,12 @@ const RouteEffects = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
 
     const isProject = pathname.startsWith('/projects/');
+    const isAdmin = pathname.startsWith('/admin');
+    const isProjectEditor = pathname.startsWith('/admin/projects/edit/');
     const [title, description] = metadata[pathname]
-      || (isProject
+      || (isProjectEditor
+        ? ['Edit Project', 'Update a project in the M/S Sumon Enterprise portfolio.']
+        : isProject
         ? ['Project Details', 'View construction project details, specifications, images, and location.']
         : ['Page Not Found', 'The requested page could not be found.']);
     const fullTitle = `${title} | ${SITE_NAME}`;
@@ -40,6 +53,7 @@ const RouteEffects = () => {
     setMeta('meta[name="twitter:title"]', 'content', fullTitle);
     setMeta('meta[name="twitter:description"]', 'content', description);
     setMeta('link[rel="canonical"]', 'href', canonical);
+    setMeta('meta[name="robots"]', 'content', isAdmin ? 'noindex, nofollow' : 'index, follow');
   }, [pathname]);
 
   return null;

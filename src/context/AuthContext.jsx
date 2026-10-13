@@ -38,8 +38,8 @@ export const AuthProvider = ({ children }) => {
     return () => { active = false; };
   }, []);
 
-  const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+  const login = async (email, password, remember = false) => {
+    const response = await api.post('/auth/login', { email, password, remember });
     const { admin: adminData, token } = response.data.data;
     
     localStorage.setItem('token', token);
