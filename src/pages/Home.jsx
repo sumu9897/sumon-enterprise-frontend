@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import projectService from '../services/projectService';
 import { getProjectStatus } from '../constants/projectStatuses';
 import {
   FaArrowRight, FaBuilding, FaTools, FaHome, FaAward,
@@ -46,8 +46,12 @@ const StatNum = ({ end, suffix, active }) => {
 
 const Home = () => {
   const dark = useDarkMode();
-  const [featuredProjects, setFeaturedProjects] = useState([]);
-  const [loading, setLoading]                   = useState(true);
+  const [featuredProjects, setFeaturedProjects] = useState(
+    () => projectService.getCachedFeaturedProjects()
+  );
+  const [loading, setLoading] = useState(
+    () => projectService.getCachedFeaturedProjects().length === 0
+  );
   const [statsVis, setStatsVis]                 = useState(false);
   const statsRef = useRef(null);
 
@@ -59,39 +63,14 @@ const Home = () => {
   const gold  = '#C9A84C';
   const dark2 = dark ? '#13151E' : '#1A1A2E';
 
-  /* ─────────────────────────────────────────────
-     Fetch projects:
-     1. Try /projects/featured first
-     2. If empty/error → fall back to /projects?limit=6
-     This guarantees the section is never empty.
-  ───────────────────────────────────────────── */
+  /* Render cached projects immediately on refresh, then refresh them in the background. */
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        setLoading(true);
-
-        // Step 1: try featured endpoint
-        const featRes = await api.get('/projects/featured');
-        const featured = featRes.data?.data || [];
-
-        if (featured.length > 0) {
-          setFeaturedProjects(featured.slice(0, 6));
-          return;
-        }
-
-        // Step 2: fallback — just get latest 6 projects
-        const allRes = await api.get('/projects?page=1&limit=6');
-        const all = allRes.data?.data || [];
-        setFeaturedProjects(all.slice(0, 6));
-
+        const result = await projectService.getFeaturedProjects();
+        setFeaturedProjects((result?.data || []).slice(0, 6));
       } catch (err) {
-        // Step 2 as error fallback
-        try {
-          const allRes = await api.get('/projects?page=1&limit=6');
-          setFeaturedProjects((allRes.data?.data || []).slice(0, 6));
-        } catch (e) {
-          console.error('Could not load projects:', e);
-        }
+        console.error('Could not load projects:', err);
       } finally {
         setLoading(false);
       }
@@ -136,7 +115,6 @@ const Home = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap');
         .home-root { font-family: 'DM Sans', sans-serif; }
         .serif     { font-family: 'Playfair Display', serif; }
         .section-label {
@@ -235,7 +213,7 @@ const Home = () => {
         {/* ══ HERO ══ */}
         <section className="hero-clip relative overflow-hidden pt-20" style={{ background: dark2 }}>
           <div className="absolute inset-0 opacity-[0.07]"
-            style={{ backgroundImage:'url("https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1920")', backgroundSize:'cover', backgroundPosition:'center' }} />
+            style={{ backgroundImage:'url("https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1280&q=65")', backgroundSize:'cover', backgroundPosition:'center' }} />
           <div className="absolute left-0 top-0 h-full w-1"
             style={{ background:`linear-gradient(180deg,transparent,${gold},transparent)` }} />
           <div className="absolute top-0 left-0 right-0 h-px"

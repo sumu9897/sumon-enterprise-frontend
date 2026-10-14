@@ -1,5 +1,37 @@
 import api from './api';
 
+const FEATURED_CACHE_KEY = 'sumon-enterprise:featured-projects';
+const FEATURED_CACHE_TTL = 5 * 60 * 1000;
+
+const readFeaturedCache = () => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(FEATURED_CACHE_KEY));
+    if (!cached || Date.now() - cached.savedAt > FEATURED_CACHE_TTL) return [];
+    return Array.isArray(cached.projects) ? cached.projects : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeFeaturedCache = (projects) => {
+  try {
+    localStorage.setItem(FEATURED_CACHE_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      projects,
+    }));
+  } catch {
+    // Storage can be unavailable in private browsing; the API result still works.
+  }
+};
+
+const clearFeaturedCache = () => {
+  try {
+    localStorage.removeItem(FEATURED_CACHE_KEY);
+  } catch {
+    // Ignore unavailable storage.
+  }
+};
+
 const projectService = {
   // Get all projects with filters
   getProjects: async (params = {}) => {
@@ -22,8 +54,11 @@ const projectService = {
   // Get featured projects
   getFeaturedProjects: async () => {
     const response = await api.get('/projects/featured');
+    writeFeaturedCache(response.data?.data || []);
     return response.data;
   },
+
+  getCachedFeaturedProjects: readFeaturedCache,
 
   // Create new project (Admin)
   createProject: async (formData) => {
@@ -32,6 +67,7 @@ const projectService = {
         'Content-Type': 'multipart/form-data',
       },
     });
+    clearFeaturedCache();
     return response.data;
   },
 
@@ -42,12 +78,14 @@ const projectService = {
         'Content-Type': 'multipart/form-data',
       },
     });
+    clearFeaturedCache();
     return response.data;
   },
 
   // Delete project (Admin)
   deleteProject: async (id) => {
     const response = await api.delete(`/projects/${id}`);
+    clearFeaturedCache();
     return response.data;
   },
 };

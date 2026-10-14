@@ -11,8 +11,8 @@ import Header from './components/common/Header';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import PrivateRoute from './components/common/PrivateRoute';
 import RouteEffects from './components/common/RouteEffects';
+import Home from './pages/Home';
 
-const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Services = lazy(() => import('./pages/Services'));
 const Projects = lazy(() => import('./pages/Projects'));
