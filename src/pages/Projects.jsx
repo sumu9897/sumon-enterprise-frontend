@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import api from "../services/api";
+import api, { getApiErrorMessage } from "../services/api";
+import projectService from "../services/projectService";
 import { toast } from "react-toastify";
 import { PROJECT_STATUSES, getProjectStatus } from '../constants/projectStatuses';
 import {
@@ -58,10 +59,18 @@ const Projects = () => {
   const sk2 = dark ? "#252838" : "#E8E4DC";
 
   useEffect(() => {
-    fetchProjects();
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      fetchProjects(controller.signal);
+    }, filters.company || filters.search ? 300 : 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [filters, pagination.page]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (signal) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -71,7 +80,7 @@ const Projects = () => {
       params.append("page", pagination.page);
       params.append("limit", pagination.limit);
 
-      const response = await api.get(`/projects?${params.toString()}`);
+      const response = await api.get(`/projects?${params.toString()}`, { signal });
       setProjects(response.data.data);
       setPagination((prev) => ({
         ...prev,
@@ -79,7 +88,29 @@ const Projects = () => {
         pages: response.data.pagination.pages,
       }));
     } catch (error) {
-      toast.error("Failed to load projects");
+      if (error.code === "ERR_CANCELED") return;
+
+      const cachedProjects = !filters.status && !filters.company && !filters.search
+        ? projectService.getCachedFeaturedProjects()
+        : [];
+
+      if (cachedProjects.length > 0) {
+        setProjects(cachedProjects);
+        setPagination((prev) => ({
+          ...prev,
+          total: cachedProjects.length,
+          pages: 1,
+        }));
+        toast.warning("Live projects are unavailable. Showing saved projects.", {
+          toastId: "projects-cached-fallback",
+        });
+      } else {
+        setProjects([]);
+        setPagination((prev) => ({ ...prev, total: 0, pages: 0 }));
+        toast.error(getApiErrorMessage(error, "Failed to load projects"), {
+          toastId: "projects-load-error",
+        });
+      }
       console.error("Error fetching projects:", error);
     } finally {
       setLoading(false);

@@ -53,9 +53,22 @@ const projectService = {
 
   // Get featured projects
   getFeaturedProjects: async () => {
-    const response = await api.get('/projects/featured');
-    writeFeaturedCache(response.data?.data || []);
-    return response.data;
+    const featuredResponse = await api.get('/projects/featured');
+    const featuredProjects = featuredResponse.data?.data || [];
+
+    // Older backend deployments can return an empty featured list. Keep the
+    // frontend compatible by falling back to the latest projects in that case.
+    if (featuredProjects.length === 0) {
+      const latestResponse = await api.get('/projects', {
+        params: { page: 1, limit: 6, sort: '-startDate' },
+      });
+      const latestProjects = latestResponse.data?.data || [];
+      writeFeaturedCache(latestProjects);
+      return { ...latestResponse.data, data: latestProjects };
+    }
+
+    writeFeaturedCache(featuredProjects);
+    return featuredResponse.data;
   },
 
   getCachedFeaturedProjects: readFeaturedCache,
