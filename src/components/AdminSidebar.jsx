@@ -6,6 +6,7 @@ import {
   FaProjectDiagram, FaPlus, FaEnvelope, FaEye,
   FaSignOutAlt, FaTachometerAlt, FaArrowRight,
   FaBars, FaCog, FaEdit, FaTimes,
+  FaUsers,
 } from 'react-icons/fa';
 
 /* ─── Nav Item ────────────────────────────────────────────── */
@@ -67,7 +68,7 @@ const SidebarSection = ({ label }) => (
 
 /* ─── Sidebar ─────────────────────────────────────────────── */
 const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
-  const { admin, logout } = useAuth();
+  const { admin, logout, can } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -136,32 +137,16 @@ const AdminSidebar = ({ unreadCount = 0, projectCount = 0 }) => {
         <SidebarSection label="Main" />
         <NavItem to="/admin/dashboard" icon={<FaTachometerAlt size={14} />} label="Dashboard" />
 
-        <SidebarSection label="Projects" />
-        <NavItem
-          to="/admin/projects/new"
-          icon={<FaPlus size={13} />}
-          label="Add Project"
-          isNew
-        />
-        <NavItem
-          to="/admin/projects"
-          icon={<FaProjectDiagram size={13} />}
-          label="All Projects"
-          badge={projectCount || undefined}
-          badgeVariant="amber"
-        />
+        {(can('projects.view') || can('projects.create')) && <SidebarSection label="Projects" />}
+        {can('projects.create') && <NavItem to="/admin/projects/new" icon={<FaPlus size={13} />} label="Add Project" isNew />}
+        {can('projects.view') && <NavItem to="/admin/projects" icon={<FaProjectDiagram size={13} />} label="All Projects" badge={projectCount || undefined} badgeVariant="amber" />}
 
-        <SidebarSection label="Communication" />
-        <NavItem
-          to="/admin/inquiries"
-          icon={<FaEnvelope size={13} />}
-          label="Inquiries"
-          badge={unreadCount || undefined}
-          badgeVariant="red"
-        />
+        {can('inquiries.view') && <SidebarSection label="Communication" />}
+        {can('inquiries.view') && <NavItem to="/admin/inquiries" icon={<FaEnvelope size={13} />} label="Inquiries" badge={unreadCount || undefined} badgeVariant="red" />}
 
         <SidebarSection label="Site" />
-        <NavItem to="/admin/content" icon={<FaEdit size={13} />} label="Website Content" isNew />
+        {can('content.update') && <NavItem to="/admin/content" icon={<FaEdit size={13} />} label="Website Content" isNew />}
+        {can('users.manage') && <NavItem to="/admin/users" icon={<FaUsers size={13} />} label="Users & Access" />}
         <NavItem to="/admin/settings" icon={<FaCog size={13} />} label="Settings & Security" />
         <NavItem
           to="/"

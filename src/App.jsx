@@ -30,8 +30,9 @@ const ProjectForm = lazy(() => import('./pages/admin/ProjectForm'));
 const InquiryManager = lazy(() => import('./pages/admin/InquiryManager'));
 const AdminSettings = lazy(() => import('./pages/admin/Settings'));
 const ContentManager = lazy(() => import('./pages/admin/ContentManager'));
+const UserManager = lazy(() => import('./pages/admin/UserManager'));
 
-const protectedPage = (element) => <PrivateRoute>{element}</PrivateRoute>;
+const protectedPage = (element, permission) => <PrivateRoute permission={permission}>{element}</PrivateRoute>;
 
 const RouterContent = () => {
   const { pathname } = useLocation();
@@ -58,12 +59,13 @@ const RouterContent = () => {
             <Route path="/admin/access-denied" element={<AuthMessage tone="warning" title="Access denied" message="Your administrator account does not have permission to open this area." />} />
             <Route path="/admin/session-expired" element={<AuthMessage tone="warning" title="Session expired" message="For your security, this session is no longer valid. Sign in again to continue." />} />
             <Route path="/admin/dashboard" element={protectedPage(<AdminDashboard />)} />
-            <Route path="/admin/projects" element={protectedPage(<ProjectManager />)} />
-            <Route path="/admin/projects/new" element={protectedPage(<ProjectForm />)} />
-            <Route path="/admin/projects/edit/:id" element={protectedPage(<ProjectForm />)} />
-            <Route path="/admin/inquiries" element={protectedPage(<InquiryManager />)} />
+            <Route path="/admin/projects" element={protectedPage(<ProjectManager />, 'projects.view')} />
+            <Route path="/admin/projects/new" element={protectedPage(<ProjectForm />, 'projects.create')} />
+            <Route path="/admin/projects/edit/:id" element={protectedPage(<ProjectForm />, 'projects.update')} />
+            <Route path="/admin/inquiries" element={protectedPage(<InquiryManager />, 'inquiries.view')} />
             <Route path="/admin/settings" element={protectedPage(<AdminSettings />)} />
-            <Route path="/admin/content" element={protectedPage(<ContentManager />)} />
+            <Route path="/admin/content" element={protectedPage(<ContentManager />, 'content.update')} />
+            <Route path="/admin/users" element={protectedPage(<UserManager />, 'users.manage')} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

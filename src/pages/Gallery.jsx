@@ -51,13 +51,13 @@ const Gallery = () => {
         api.get('/projects?limit=100'),
       ]);
       const managedGallery = contentResult.status === 'fulfilled'
-        ? contentResult.value.data.data?.gallery || []
+        ? (contentResult.value.data.data?.gallery || []).filter((item) => item?.imageUrl && item?.project)
         : [];
       if (managedGallery.length > 0) {
         setImages(managedGallery.map((item) => ({
           url: item.imageUrl,
           caption: item.caption,
-          projectName: item.project.projectName,
+          projectName: item.project.projectName || 'Construction project',
           projectId: item.project._id,
           slug: item.project.slug,
           status: item.project.status,
@@ -91,7 +91,7 @@ const Gallery = () => {
       setImages(allImages);
     } catch (error) {
       console.error('Failed to load gallery:', error);
-      toast.error('Failed to load gallery images');
+      toast.error('Failed to load gallery images', { toastId: 'gallery-load-error' });
     } finally {
       setLoading(false);
     }

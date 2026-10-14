@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
+import { useAuth } from '../../context/AuthContext';
 import {
   FaTrash, FaEnvelope, FaEnvelopeOpen, FaFilter,
   FaTimes, FaReply, FaUser, FaPhone, FaTag, FaCalendarAlt,
@@ -38,6 +39,7 @@ const DetailRow = ({ icon, label, value }) => (
 
 /* ─── InquiryManager ──────────────────────────────────────── */
 const InquiryManager = () => {
+  const { can } = useAuth();
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -85,7 +87,7 @@ const InquiryManager = () => {
 
   const handleSelect = (inq) => {
     setSelectedInquiry(inq);
-    if (inq.status === 'unread') handleStatusChange(inq._id, 'read');
+    if (inq.status === 'unread' && can('inquiries.update')) handleStatusChange(inq._id, 'read');
   };
 
   const filtered = filter ? inquiries.filter(i => i.status === filter) : inquiries;
@@ -224,7 +226,7 @@ const InquiryManager = () => {
                             </div>
                             {/* Delete */}
                             <div className="col-span-1 flex justify-center">
-                              <button
+                              {can('inquiries.delete') && <button
                                 onClick={e => { e.stopPropagation(); handleDelete(inq._id, inq.name); }}
                                 disabled={deleting === inq._id}
                                 className="w-7 h-7 rounded-lg bg-white/5 hover:bg-red-500/15 text-white/30 hover:text-red-400 flex items-center justify-center transition-all"
@@ -232,7 +234,7 @@ const InquiryManager = () => {
                                 {deleting === inq._id
                                   ? <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin" />
                                   : <FaTrash size={11} />}
-                              </button>
+                              </button>}
                             </div>
                           </div>
                         );
@@ -281,7 +283,7 @@ const InquiryManager = () => {
                   </div>
 
                   {/* Status change */}
-                  <div className="px-5 py-4 border-b border-white/5">
+                  {can('inquiries.update') && <div className="px-5 py-4 border-b border-white/5">
                     <p className="text-[10px] text-amber-400 uppercase tracking-widest font-bold mb-2">Update Status</p>
                     <div className="grid grid-cols-3 gap-2">
                       {['unread', 'read', 'replied'].map(s => {
@@ -301,7 +303,7 @@ const InquiryManager = () => {
                         );
                       })}
                     </div>
-                  </div>
+                  </div>}
 
                   {/* Reply button */}
                   <div className="px-5 py-4">

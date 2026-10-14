@@ -55,12 +55,17 @@ export const AuthProvider = ({ children }) => {
     setAdmin(null);
   };
 
+  const can = (permission) => (
+    admin?.role === 'superadmin' || admin?.permissions?.includes('*') || admin?.permissions?.includes(permission)
+  );
+
   const value = {
     admin,
     loading,
     login,
     logout,
     isAuthenticated: !!admin,
+    can,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

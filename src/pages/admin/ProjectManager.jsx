@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api, { getApiErrorMessage } from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
+import { useAuth } from '../../context/AuthContext';
 import { PROJECT_STATUSES, getProjectStatus } from '../../constants/projectStatuses';
 import {
   FaPlus, FaEdit, FaTrash, FaEye, FaSearch,
@@ -21,6 +22,7 @@ const StatusBadge = ({ status }) => {
 
 /* ─── ProjectManager ──────────────────────────────────────── */
 const ProjectManager = () => {
+  const { can } = useAuth();
   const [searchParams] = useSearchParams();
   const requestedStatus = searchParams.get('status');
   const [projects, setProjects] = useState([]);
@@ -31,6 +33,7 @@ const ProjectManager = () => {
   ));
   const [deleting, setDeleting] = useState(null);
   const [togglingFeatured, setTogglingFeatured] = useState(() => new Set());
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   useEffect(() => { fetchProjects(); }, []);
 
@@ -92,6 +95,21 @@ const ProjectManager = () => {
     }
   };
 
+  const handleStatusChange = async (project, status) => {
+    const previousStatus = project.status;
+    setProjects((current) => current.map((item) => item._id === project._id ? { ...item, status } : item));
+    setUpdatingStatus(project._id);
+    try {
+      await api.put(`/projects/${project._id}`, { status });
+      toast.success('Project status updated.', { toastId: `status-${project._id}` });
+    } catch (error) {
+      setProjects((current) => current.map((item) => item._id === project._id ? { ...item, status: previousStatus } : item));
+      toast.error(getApiErrorMessage(error, 'Project status could not be updated.'), { toastId: `status-error-${project._id}` });
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
   const filtered = projects.filter(p => {
     const matchSearch = p.projectName.toLowerCase().includes(search.toLowerCase()) ||
                         (p.company || '').toLowerCase().includes(search.toLowerCase());
@@ -117,12 +135,12 @@ const ProjectManager = () => {
               {projects.length} total projects in database
             </p>
           </div>
-          <Link
+          {can('projects.create') && <Link
             to="/admin/projects/new"
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 uppercase tracking-wider"
           >
             <FaPlus size={11} /> Add New Project
-          </Link>
+          </Link>}
         </header>
 
         <div className="space-y-5 px-4 py-6 sm:px-8">
@@ -265,7 +283,11 @@ const ProjectManager = () => {
 
                   {/* Status */}
                   <div className="hidden md:block md:col-span-1">
-                    <StatusBadge status={project.status} />
+                    {(can('projects.status') || can('projects.update')) ? (
+                      <select value={project.status} disabled={updatingStatus === project._id} onChange={(event) => handleStatusChange(project, event.target.value)} className="max-w-full rounded-lg border border-white/10 bg-[#171A27] px-2 py-1 text-[10px] text-white outline-none focus:border-amber-400/50">
+                        {PROJECT_STATUSES.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
+                      </select>
+                    ) : <StatusBadge status={project.status} />}
                   </div>
 
                   {/* Year */}
@@ -277,6 +299,7 @@ const ProjectManager = () => {
 
                   {/* Featured */}
                   <div className="hidden md:flex md:col-span-1 justify-center">
+                    {can('projects.update') && (
                     <button
                       type="button"
                       onClick={() => handleFeaturedToggle(project)}
@@ -290,6 +313,7 @@ const ProjectManager = () => {
                         ? <FaStar className="text-amber-400" size={15} />
                         : <FaRegStar className="text-white/20" size={15} />}
                     </button>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -302,14 +326,14 @@ const ProjectManager = () => {
                     >
                       <FaEye size={12} />
                     </Link>
-                    <Link
+                    {can('projects.update') && <Link
                       to={`/admin/projects/edit/${project._id}`}
                       title="Edit"
                       className="w-8 h-8 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 flex items-center justify-center transition-all hover:-translate-y-0.5"
                     >
                       <FaEdit size={12} />
-                    </Link>
-                    <button
+                    </Link>}
+                    {can('projects.delete') && <button
                       onClick={() => handleDelete(project._id, project.projectName)}
                       disabled={deleting === project._id}
                       title="Delete"
@@ -318,7 +342,7 @@ const ProjectManager = () => {
                       {deleting === project._id
                         ? <div className="w-3 h-3 border border-red-400 border-t-transparent rounded-full animate-spin" />
                         : <FaTrash size={12} />}
-                    </button>
+                    </button>}
                   </div>
                 </div>
               ))

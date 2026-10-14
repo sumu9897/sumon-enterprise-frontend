@@ -56,7 +56,7 @@ const StatusBadge = ({ status }) => {
 
 /* ─── Dashboard ───────────────────────────────────────────── */
 const Dashboard = () => {
-  const { admin } = useAuth();
+  const { admin, can } = useAuth();
   const [stats, setStats] = useState({
     totalProjects: 0, activeProjects: 0, completedProjects: 0,
     totalInquiries: 0, unreadInquiries: 0,
@@ -70,13 +70,13 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const [projRes, inqStatsRes, inqRes] = await Promise.all([
-        api.get('/projects?limit=200'),
-        api.get('/inquiries/stats'),
-        api.get('/inquiries?limit=5'),
+        can('projects.view') ? api.get('/projects?limit=200') : Promise.resolve(null),
+        can('inquiries.view') ? api.get('/inquiries/stats') : Promise.resolve(null),
+        can('inquiries.view') ? api.get('/inquiries?limit=5') : Promise.resolve(null),
       ]);
-      const projects  = projRes.data.data || [];
-      const inqStats  = inqStatsRes.data.data || {};
-      const inquiries = inqRes.data.data || [];
+      const projects  = projRes?.data?.data || [];
+      const inqStats  = inqStatsRes?.data?.data || {};
+      const inquiries = inqRes?.data?.data || [];
       setStats({
         totalProjects:    projects.length,
         activeProjects:    projects.filter(p => p.status !== 'Completed').length,
@@ -100,7 +100,7 @@ const Dashboard = () => {
     { title: 'Completed',        value: stats.completedProjects, icon: <FaCheckCircle />,    to: '/admin/projects?status=Completed',color: 'green'  },
     { title: 'Total Inquiries',  value: stats.totalInquiries,   icon: <FaEnvelope />,       to: '/admin/inquiries',               color: 'purple' },
     { title: 'Unread Inquiries', value: stats.unreadInquiries,  icon: <FaEnvelopeOpen />,   to: '/admin/inquiries?status=unread', color: 'red'    },
-  ];
+  ].filter((card) => card.to.includes('projects') ? can('projects.view') : can('inquiries.view'));
 
   const glance = [
     { label: 'Active',    val: stats.activeProjects,    barColor: 'bg-amber-500/60',   textColor: 'text-amber-400',   pct: stats.totalProjects   ? stats.activeProjects    / stats.totalProjects * 100 : 0 },
@@ -131,12 +131,12 @@ const Dashboard = () => {
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-[#0D0F18]" />
               )}
             </button>
-            <Link
+            {can('projects.create') && <Link
               to="/admin/projects/new"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 uppercase tracking-wider"
             >
               <FaPlus size={11} /> Add Project
-            </Link>
+            </Link>}
           </div>
         </header>
 
