@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const SITE_NAME = 'M/S Sumon Enterprise';
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://sumon-enterprise.vercel.app';
+const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://sumon-enterprise.vercel.app').replace(/\/$/, '');
+const PRODUCTION_HOSTNAME = new URL(SITE_URL).hostname;
+const INDEX_ROBOTS = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
 const metadata = {
-  '/': ['Construction Company in Bangladesh Since 2000', 'Trusted construction, contracting, repair, and apartment development services across Bangladesh.'],
+  '/': ['Construction Company in Bangladesh', 'M/S Sumon Enterprise provides main contracting, subcontracting, building repair, and apartment development services across Bangladesh since 2000.'],
   '/about': ['About Our Construction Company', 'Learn about M/S Sumon Enterprise, our values, experience, and 25+ years of construction expertise.'],
   '/services': ['Construction Services', 'Explore main contracting, subcontracting, repair, and apartment development services.'],
   '/projects': ['Construction Projects', 'Browse ongoing and completed construction projects delivered across Bangladesh.'],
@@ -42,8 +44,12 @@ const RouteEffects = () => {
         : isProject
         ? ['Project Details', 'View construction project details, specifications, images, and location.']
         : ['Page Not Found', 'The requested page could not be found.']);
-    const fullTitle = `${title} | ${SITE_NAME}`;
-    const canonical = `${SITE_URL}${pathname === '/' ? '' : pathname}`;
+    const fullTitle = pathname === '/'
+      ? `${title} | Sumon Enterprise`
+      : `${title} | ${SITE_NAME}`;
+    const isKnownPublicRoute = Object.hasOwn(metadata, pathname) || isProject;
+    const isProductionHost = window.location.hostname === PRODUCTION_HOSTNAME;
+    const canonical = `${SITE_URL}${pathname === '/' ? '/' : pathname}`;
 
     document.title = fullTitle;
     setMeta('meta[name="description"]', 'content', description);
@@ -53,7 +59,11 @@ const RouteEffects = () => {
     setMeta('meta[name="twitter:title"]', 'content', fullTitle);
     setMeta('meta[name="twitter:description"]', 'content', description);
     setMeta('link[rel="canonical"]', 'href', canonical);
-    setMeta('meta[name="robots"]', 'content', isAdmin ? 'noindex, nofollow' : 'index, follow');
+    setMeta(
+      'meta[name="robots"]',
+      'content',
+      isProductionHost && isKnownPublicRoute && !isAdmin ? INDEX_ROBOTS : 'noindex, nofollow'
+    );
   }, [pathname]);
 
   return null;

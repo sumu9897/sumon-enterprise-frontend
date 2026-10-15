@@ -95,7 +95,7 @@ const Home = () => {
     { end: 25,  suffix: '+', label: 'Years of Experience', icon: <FaChartLine /> },
     { end: 80,  suffix: '+', label: 'Projects Completed',  icon: <FaBuilding />  },
     { end: 4,   suffix: '',  label: 'Core Services',       icon: <FaTools />     },
-    { end: 100, suffix: '%', label: 'Client Satisfaction', icon: <FaHandshake /> },
+    { end: 2000, suffix: '', label: 'Established', icon: <FaHandshake /> },
   ];
 
   const services = [
@@ -107,7 +107,7 @@ const Home = () => {
 
   const whyUs = [
     { icon: <FaCheckCircle />, title: 'Proven Quality',    desc: 'Every project is delivered with premium materials and rigorous quality checks at each stage.' },
-    { icon: <FaAward />,       title: 'Award-Worthy Work', desc: '25 years of consistent excellence recognised by clients across Bangladesh.' },
+    { icon: <FaAward />,       title: 'Quality-Focused Work', desc: '25 years of consistent construction experience serving clients across Bangladesh.' },
     { icon: <FaHandshake />,   title: 'Client-First',      desc: 'We listen, adapt, and deliver exactly what our clients envision — on time and on budget.' },
     { icon: <FaChartLine />,   title: 'Proven Growth',     desc: 'From 1 project to 50+, our track record speaks for our reliability and ambition.' },
   ];
@@ -229,10 +229,10 @@ const Home = () => {
               </div>
               <h1 className="serif font-black text-white fade-up d2"
                 style={{ fontSize:'clamp(2.8rem,7vw,5rem)', lineHeight:1.08 }}>
-                M/S SUMON<br /><span style={{ color:gold }}>ENTERPRISE</span>
+                Construction Company{' '}<br /><span style={{ color:gold }}>in Bangladesh</span>
               </h1>
               <p className="mt-5 text-xl font-medium fade-up d3" style={{ color:'rgba(255,255,255,.75)' }}>
-                Building Dreams, Creating Landmarks Since 2000
+                M/S Sumon Enterprise — Building Since 2000
               </p>
               <p className="mt-3 text-base leading-relaxed fade-up d3 max-w-xl"
                 style={{ color:'rgba(255,255,255,.5)' }}>
@@ -324,8 +324,13 @@ const Home = () => {
                     <div className="aspect-video overflow-hidden relative"
                       style={{ background: dark ? '#1A1A2E' : '#E8E4DC' }}>
                       {project.images?.[0] ? (
-                        <img src={project.images[0].url} alt={project.projectName}
-                          className="proj-img w-full h-full object-cover" loading="lazy" />
+                        <img
+                          src={project.images[0].url}
+                          alt={`${project.projectName} construction project${project.address?.city ? ` in ${project.address.city}` : ''}`}
+                          className="proj-img w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                           <FaBuilding style={{ color:gold, fontSize:28 }} />
