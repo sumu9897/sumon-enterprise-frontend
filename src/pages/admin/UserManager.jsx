@@ -5,7 +5,7 @@ import AdminSidebar from '../../components/AdminSidebar';
 import api, { getApiErrorMessage } from '../../services/api';
 import { ADMIN_PERMISSION_GROUPS } from '../../constants/adminPermissions';
 
-const emptyForm = { name: '', email: '', password: '', permissions: [] };
+const emptyForm = { name: '', email: '', password: '', role: 'editor', permissions: [] };
 
 const PermissionEditor = ({ value, onChange, disabled = false }) => {
   const toggle = (permission) => {
@@ -78,6 +78,7 @@ const UserManager = () => {
       const response = await api.put(`/auth/admins/${admin._id}`, {
         name: admin.name,
         permissions: admin.permissions,
+        role: admin.role,
         isActive: admin.isActive,
       });
       updateLocal(admin._id, response.data.data);
@@ -118,10 +119,11 @@ const UserManager = () => {
         <div className="space-y-6 px-4 py-6 sm:px-8">
           <form onSubmit={createAdmin} className="space-y-5 rounded-2xl border border-white/5 bg-[#111320] p-5 sm:p-6">
             <div className="flex items-center gap-3"><FaUserPlus className="text-amber-400" /><h2 className="font-heading text-xl">Add administrator</h2></div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               <input className={inputClass} placeholder="Full name" required minLength={2} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               <input className={inputClass} placeholder="Email address" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               <input className={inputClass} placeholder="Temporary password (12+ characters)" required minLength={12} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <select className={inputClass} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="admin">Administrator</option></select>
             </div>
             <PermissionEditor value={form.permissions} onChange={(permissions) => setForm({ ...form, permissions })} />
             <button disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-3 text-sm font-bold text-[#111320] disabled:opacity-50"><FaUserPlus />{saving ? 'Creating…' : 'Create administrator'}</button>
@@ -138,7 +140,7 @@ const UserManager = () => {
                       <div className="flex items-center gap-2"><h3 className="font-bold">{admin.name}</h3>{primary && <span className="rounded-full bg-amber-400/15 px-2 py-1 text-[10px] font-bold uppercase text-amber-400">Superadmin</span>}</div>
                       <p className="text-sm text-white/35">{admin.email}</p>
                     </div>
-                    {!primary && <label className="flex items-center gap-2 text-sm text-white/60"><input type="checkbox" checked={admin.isActive !== false} onChange={(e) => updateLocal(admin._id, { isActive: e.target.checked })} className="h-4 w-4 accent-emerald-400" />Account active</label>}
+                    {!primary && <div className="flex items-center gap-3"><select className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white" value={admin.role || 'editor'} onChange={(e) => updateLocal(admin._id, { role: e.target.value })}><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="admin">Administrator</option></select><label className="flex items-center gap-2 text-sm text-white/60"><input type="checkbox" checked={admin.isActive !== false} onChange={(e) => updateLocal(admin._id, { isActive: e.target.checked })} className="h-4 w-4 accent-emerald-400" />Account active</label></div>}
                   </div>
                   {primary ? <p className="rounded-xl border border-amber-400/15 bg-amber-400/5 p-4 text-sm text-amber-200/70">The primary administrator has full access and cannot be restricted here.</p> : <PermissionEditor value={admin.permissions || []} onChange={(permissions) => updateLocal(admin._id, { permissions })} />}
                   {!primary && <div className="flex flex-wrap gap-3"><button type="button" disabled={busyId === admin._id} onClick={() => saveAccess(admin)} className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-xs font-bold text-[#111320] disabled:opacity-50"><FaSave />Save access</button><button type="button" disabled={busyId === admin._id} onClick={() => removeAdmin(admin)} className="inline-flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-400 disabled:opacity-50"><FaTrash />Delete user</button></div>}
