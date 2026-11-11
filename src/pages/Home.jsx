@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import projectService from '../services/projectService';
 import { getProjectStatus } from '../constants/projectStatuses';
+import useSiteContent from '../hooks/useSiteContent';
+import defaultSiteContent from '../data/defaultSiteContent';
 import {
   FaArrowRight, FaBuilding, FaTools, FaHome, FaAward,
   FaHandshake, FaChartLine, FaCheckCircle, FaHammer,
@@ -46,6 +48,7 @@ const StatNum = ({ end, suffix, active }) => {
 
 const Home = () => {
   const dark = useDarkMode();
+  const siteContent = useSiteContent();
   const [featuredProjects, setFeaturedProjects] = useState(
     () => projectService.getCachedFeaturedProjects()
   );
@@ -91,19 +94,31 @@ const Home = () => {
     return () => obs.disconnect();
   }, []);
 
-  const stats = [
+  const fallbackStats = [
     { end: 25,  suffix: '+', label: 'Years of Experience', icon: <FaChartLine /> },
     { end: 80,  suffix: '+', label: 'Projects Completed',  icon: <FaBuilding />  },
     { end: 4,   suffix: '',  label: 'Core Services',       icon: <FaTools />     },
     { end: 2000, suffix: '', label: 'Established', icon: <FaHandshake /> },
   ];
 
-  const services = [
+  const fallbackServices = [
     { icon: <FaBuilding />, title: 'Main Contractor',       desc: 'Complete project management and execution from conception to completion.' },
     { icon: <FaTools />,    title: 'Sub Contractor',        desc: 'Specialized construction services for specific project phases and requirements.' },
     { icon: <FaHammer />,   title: 'Repairing Work',        desc: 'Professional repair and maintenance services for residential and commercial buildings.' },
     { icon: <FaHome />,     title: 'Apartment Development', desc: 'End-to-end residential development from land acquisition to final handover.' },
   ];
+  const homepage = { ...defaultSiteContent.homepage, ...(siteContent?.homepage || {}) };
+  const serviceIcons = [<FaBuilding />, <FaTools />, <FaHammer />, <FaHome />];
+  const services = siteContent?.services?.filter((item) => item.active !== false).sort((a, b) => a.order - b.order).map((item, index) => ({
+    icon: serviceIcons[index % serviceIcons.length],
+    title: item.title,
+    desc: item.description || item.tagline,
+  })) || fallbackServices;
+  const stats = siteContent?.achievements?.filter((item) => item.active !== false).sort((a, b) => a.order - b.order).map((item, index) => {
+    const match = String(item.value || '').match(/([\d,]+)\s*(.*)/);
+    return { end: Number((match?.[1] || '0').replaceAll(',', '')), suffix: match?.[2] || '', label: item.label, icon: [<FaChartLine />, <FaBuilding />, <FaTools />, <FaHandshake />][index % 4] };
+  }).filter((item) => item.end > 0) || [];
+  const displayedStats = stats.length ? stats : fallbackStats;
 
   const whyUs = [
     { icon: <FaCheckCircle />, title: 'Proven Quality',    desc: 'Every project is delivered with premium materials and rigorous quality checks at each stage.' },
@@ -212,8 +227,8 @@ const Home = () => {
 
         {/* ══ HERO ══ */}
         <section className="hero-clip relative overflow-hidden pt-20" style={{ background: dark2 }}>
-          <div className="absolute inset-0 opacity-[0.07]"
-            style={{ backgroundImage:'url("https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1280&q=65")', backgroundSize:'cover', backgroundPosition:'center' }} />
+          <div className="absolute inset-0 opacity-[0.14]"
+            style={{ backgroundImage:`url("${homepage.heroImageUrl || 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1280&q=65'}")`, backgroundSize:'cover', backgroundPosition:'center' }} />
           <div className="absolute left-0 top-0 h-full w-1"
             style={{ background:`linear-gradient(180deg,transparent,${gold},transparent)` }} />
           <div className="absolute top-0 left-0 right-0 h-px"
@@ -224,23 +239,22 @@ const Home = () => {
               <div className="inline-block px-4 py-2 rounded-sm mb-6 fade-up d1"
                 style={{ background:'rgba(201,168,76,.12)', border:'1px solid rgba(201,168,76,.3)' }}>
                 <span className="text-xs font-bold tracking-widest uppercase" style={{ color:gold }}>
-                  Established 2000 · Bangladesh
+                  {homepage.heroEyebrow}
                 </span>
               </div>
               <h1 className="serif font-black text-white fade-up d2"
                 style={{ fontSize:'clamp(2.8rem,7vw,5rem)', lineHeight:1.08 }}>
-                Construction Company{' '}<br /><span style={{ color:gold }}>in Bangladesh</span>
+                {homepage.heroTitle}
               </h1>
               <p className="mt-5 text-xl font-medium fade-up d3" style={{ color:'rgba(255,255,255,.75)' }}>
-                M/S Sumon Enterprise — Building Since 2000
+                M/S Sumon Enterprise
               </p>
               <p className="mt-3 text-base leading-relaxed fade-up d3 max-w-xl"
                 style={{ color:'rgba(255,255,255,.5)' }}>
-                Leading construction company delivering excellence in Main Contracting,
-                Sub-Contracting, Repairing, and Apartment Development across Bangladesh.
+                {homepage.heroSubtitle}
               </p>
               <div className="flex flex-wrap gap-4 mt-10 fade-up d4">
-                <Link to="/projects" className="btn-gold">View Projects <FaArrowRight size={12} /></Link>
+                <Link to={homepage.primaryCtaUrl || '/projects'} className="btn-gold">{homepage.primaryCtaLabel || 'Explore Projects'} <FaArrowRight size={12} /></Link>
                 <Link to="/contact"  className="btn-outline-white">Contact Us</Link>
               </div>
             </div>
@@ -260,7 +274,7 @@ const Home = () => {
                    marginTop:'-40px', marginBottom:'-40px', paddingTop:80, paddingBottom:80 }}>
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((s,i) => (
+              {displayedStats.map((s,i) => (
                 <div key={i} className="text-center group relative">
                   {i>0 && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-px h-12 hidden md:block"
                     style={{ background:'rgba(201,168,76,.2)' }} />}
