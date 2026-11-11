@@ -31,6 +31,7 @@ const InquiryManager = lazy(() => import('./pages/admin/InquiryManager'));
 const AdminSettings = lazy(() => import('./pages/admin/Settings'));
 const ContentManager = lazy(() => import('./pages/admin/ContentManager'));
 const UserManager = lazy(() => import('./pages/admin/UserManager'));
+const ProjectWorkspace = lazy(() => import('./pages/admin/ProjectWorkspace'));
 
 const protectedPage = (element, permission) => <PrivateRoute permission={permission}>{element}</PrivateRoute>;
 
@@ -62,6 +63,7 @@ const RouterContent = () => {
             <Route path="/admin/projects" element={protectedPage(<ProjectManager />, 'projects.view')} />
             <Route path="/admin/projects/new" element={protectedPage(<ProjectForm />, 'projects.create')} />
             <Route path="/admin/projects/edit/:id" element={protectedPage(<ProjectForm />, 'projects.update')} />
+            <Route path="/admin/projects/:id/workspace" element={protectedPage(<ProjectWorkspace />, 'projects.view')} />
             <Route path="/admin/inquiries" element={protectedPage(<InquiryManager />, 'inquiries.view')} />
             <Route path="/admin/settings" element={protectedPage(<AdminSettings />)} />
             <Route path="/admin/content" element={protectedPage(<ContentManager />, 'content.update')} />

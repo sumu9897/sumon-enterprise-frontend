@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { PROJECT_STATUSES, getProjectStatus } from '../../constants/projectStatuses';
 import {
   FaPlus, FaEdit, FaTrash, FaEye, FaSearch,
-  FaBuilding, FaFilter, FaTimes, FaStar, FaRegStar, FaArchive,
+  FaBuilding, FaFilter, FaTimes, FaStar, FaRegStar, FaArchive, FaChartLine,
 } from 'react-icons/fa';
 
 /* ─── Status Badge ────────────────────────────────────────── */
@@ -345,6 +345,7 @@ const ProjectManager = () => {
                     >
                       <FaEdit size={12} />
                     </Link>}
+                    <Link to={`/admin/projects/${project._id}/workspace`} title="Progress & milestones" className="w-8 h-8 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 flex items-center justify-center transition-all"><FaChartLine size={12} /></Link>
                     {can('projects.update') && project.publishStatus !== 'archived' && <button type="button" onClick={() => handleArchive(project)} title="Archive" className="w-8 h-8 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 flex items-center justify-center transition-all"><FaArchive size={12} /></button>}
                     {can('projects.delete') && <button
                       onClick={() => handleDelete(project._id, project.projectName)}

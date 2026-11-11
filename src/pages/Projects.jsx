@@ -37,6 +37,8 @@ const Projects = () => {
   const [filters, setFilters] = useState({
     status: "",
     company: "",
+    category: "",
+    location: "",
     search: "",
   });
   const [pagination, setPagination] = useState({
@@ -62,7 +64,7 @@ const Projects = () => {
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       fetchProjects(controller.signal);
-    }, filters.company || filters.search ? 300 : 0);
+    }, filters.company || filters.category || filters.location || filters.search ? 300 : 0);
 
     return () => {
       window.clearTimeout(timer);
@@ -76,6 +78,8 @@ const Projects = () => {
       const params = new URLSearchParams();
       if (filters.status) params.append("status", filters.status);
       if (filters.company) params.append("company", filters.company);
+      if (filters.category) params.append("category", filters.category);
+      if (filters.location) params.append("location", filters.location);
       if (filters.search) params.append("search", filters.search);
       params.append("page", pagination.page);
       params.append("limit", pagination.limit);
@@ -90,7 +94,7 @@ const Projects = () => {
     } catch (error) {
       if (error.code === "ERR_CANCELED") return;
 
-      const cachedProjects = !filters.status && !filters.company && !filters.search
+      const cachedProjects = !filters.status && !filters.company && !filters.category && !filters.location && !filters.search
         ? projectService.getCachedFeaturedProjects()
         : [];
 
@@ -128,11 +132,11 @@ const Projects = () => {
   };
 
   const clearFilters = () => {
-    setFilters({ status: "", company: "", search: "" });
+    setFilters({ status: "", company: "", category: "", location: "", search: "" });
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const hasFilters = filters.status || filters.company || filters.search;
+  const hasFilters = filters.status || filters.company || filters.category || filters.location || filters.search;
 
   return (
     <>
@@ -263,7 +267,7 @@ const Projects = () => {
             className="rounded-sm p-6 mb-8 shadow-lg"
             style={{ background: card, border: `1px solid ${bdr}` }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label
                   className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase mb-2"
@@ -282,6 +286,9 @@ const Projects = () => {
                   ))}
                 </select>
               </div>
+
+              <div><label className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase mb-2" style={{ color: gold }}><FaFilter size={10} /> Category</label><input type="text" placeholder="Residential, Commercial…" value={filters.category} onChange={(e) => handleFilterChange('category', e.target.value)} className="filter-input" /></div>
+              <div><label className="flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase mb-2" style={{ color: gold }}><FaFilter size={10} /> Location</label><input type="text" placeholder="Dhaka, Uttara…" value={filters.location} onChange={(e) => handleFilterChange('location', e.target.value)} className="filter-input" /></div>
 
               <div>
                 <label
@@ -441,6 +448,7 @@ const Projects = () => {
                       >
                         {project.projectName}
                       </h3>
+                      {project.category && <p className="mb-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: gold }}>{project.category}</p>}
 
                       {project.company && (
                         <p

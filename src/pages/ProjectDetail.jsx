@@ -9,6 +9,7 @@ import {
   FaMapMarkerAlt, FaCalendarAlt, FaBuilding, FaArrowLeft,
   FaRulerCombined, FaLayerGroup, FaHammer, FaArrowRight,
   FaPhoneAlt, FaExpand,
+  FaTasks, FaCheckCircle,
 } from 'react-icons/fa';
 
 /* ── useDarkMode ── */
@@ -52,6 +53,7 @@ const ProjectDetail = () => {
   const [lbOpen, setLbOpen]       = useState(false);
   const [lbIndex, setLbIndex]     = useState(0);
   const [activeImg, setActiveImg] = useState(0);
+  const [tracking, setTracking] = useState({ milestones: [], progress: [] });
 
   const bg    = dark ? '#0F1117' : '#F8F5EF';
   const card  = dark ? '#1C1E2A' : '#FFFFFF';
@@ -67,6 +69,8 @@ const ProjectDetail = () => {
         setLoading(true);
         const r = await api.get(`/projects/slug/${slug}`);
         setProject(r.data.data);
+        const trackingResponse = await api.get(`/project-tracking/public/${r.data.data._id}`).catch(() => null);
+        if (trackingResponse) setTracking(trackingResponse.data.data || { milestones: [], progress: [] });
       } catch {
         toast.error('Failed to load project details');
       } finally {
@@ -274,6 +278,14 @@ const ProjectDetail = () => {
                   {project.description}
                 </p>
               </div>
+
+              {project.scope && <div className="rounded-sm p-6" style={{ background:card, border:`1px solid ${bdr}` }}><span className="sl">Scope of Work</span><div className="gdv" /><p className="whitespace-pre-line text-sm leading-relaxed" style={{ color:sub }}>{project.scope}</p></div>}
+
+              {project.highlights?.length > 0 && <div className="rounded-sm p-6" style={{ background:card, border:`1px solid ${bdr}` }}><span className="sl">Project Highlights</span><div className="gdv" /><div className="grid gap-3 sm:grid-cols-2">{project.highlights.map((item, index) => <div key={index} className="flex items-start gap-3 text-sm" style={{ color:sub }}><FaCheckCircle className="mt-1 shrink-0" style={{ color:gold }} />{item}</div>)}</div></div>}
+
+              {tracking.progress.length > 0 && <div className="rounded-sm p-6" style={{ background:card, border:`1px solid ${bdr}` }}><span className="sl">Verified Progress</span><div className="gdv" />{(() => { const latest = tracking.progress[0]; const value = latest.weightedPhysicalProgress ?? latest.actualProgress; return <><div className="flex items-end justify-between"><div><p className="text-sm font-bold" style={{ color:text }}>{latest.phase}</p><p className="text-xs" style={{ color:sub }}>Verified {fmtDate(latest.reportingDate)}</p></div><strong className="serif text-3xl" style={{ color:gold }}>{value}%</strong></div><div className="mt-4 h-3 overflow-hidden rounded-full" style={{ background:bdr }}><div className="h-full rounded-full" style={{ width:`${value}%`, background:gold }} /></div>{latest.workCompleted && <p className="mt-4 text-sm leading-relaxed" style={{ color:sub }}>{latest.workCompleted}</p>}</>; })()}</div>}
+
+              {tracking.milestones.length > 0 && <div><span className="sl">Project Timeline</span><div className="gdv" /><div className="space-y-3">{tracking.milestones.map((item) => <div key={item._id} className="flex gap-4 rounded-sm p-5" style={{ background:card, border:`1px solid ${bdr}` }}><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: item.status === 'Completed' ? '#16a34a22' : '#C9A84C22', color:item.status === 'Completed' ? '#22c55e' : gold }}><FaTasks /></div><div className="flex-1"><div className="flex flex-wrap justify-between gap-2"><h3 className="font-bold">{item.title}</h3><span className="text-[10px] font-bold uppercase" style={{ color:gold }}>{item.status}</span></div><p className="mt-1 text-xs" style={{ color:sub }}>{fmtDate(item.plannedStartDate) || 'Start date pending'} — {fmtDate(item.actualCompletionDate || item.plannedCompletionDate)}</p>{item.description && <p className="mt-2 text-sm" style={{ color:sub }}>{item.description}</p>}</div></div>)}</div></div>}
 
               {/* Specs */}
               {specs.length > 0 && (
