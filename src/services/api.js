@@ -1,6 +1,15 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
+const unsafeMethods = new Set(['post', 'put', 'patch', 'delete']);
+
+const legacyToken = localStorage.getItem('token');
+if (legacyToken) {
+  sessionStorage.setItem('token', legacyToken);
+  localStorage.setItem('adminSession', '1');
+  localStorage.removeItem('token');
+  localStorage.removeItem('admin');
+}
 
 export const getApiErrorMessage = (error, fallback = 'Something went wrong. Please try again.') => {
   if (error.code === 'ECONNABORTED') return 'The request took too long. Please try again.';
@@ -17,6 +26,7 @@ export const getApiErrorMessage = (error, fallback = 'Something went wrong. Plea
 const api = axios.create({
   baseURL: API_URL,
   timeout: 15000,
+  withCredentials: true,
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -26,12 +36,12 @@ const api = axios.create({
 // Add token to requests if available
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
+    }
+    const csrfToken = sessionStorage.getItem('csrfToken');
+    if (csrfToken && unsafeMethods.has(String(config.method || '').toLowerCase())) {
+      config.headers['X-CSRF-Token'] = csrfToken;
     }
     return config;
   },
@@ -45,9 +55,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isLoginRequest = error.config?.url?.includes('/auth/login');
-    if (error.response?.status === 401 && !isLoginRequest && localStorage.getItem('token')) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('admin');
+    const fallbackToken = sessionStorage.getItem('token');
+    if (error.response?.status === 401 && !isLoginRequest && fallbackToken && !error.config?._bearerRetried) {
+      const retryConfig = { ...error.config, _bearerRetried: true };
+      retryConfig.headers = { ...retryConfig.headers, Authorization: `Bearer ${fallbackToken}` };
+      return api.request(retryConfig);
+    }
+    if (error.response?.status === 401 && !isLoginRequest && localStorage.getItem('adminSession')) {
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('csrfToken');
+      localStorage.removeItem('adminSession');
       if (!window.location.pathname.startsWith('/admin/login')) {
         window.location.assign('/admin/session-expired');
       }

@@ -16,8 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const hasSessionHint = localStorage.getItem('adminSession') === '1' || sessionStorage.getItem('token');
+    if (!hasSessionHint) {
       setLoading(false);
       return;
     }
@@ -25,11 +25,13 @@ export const AuthProvider = ({ children }) => {
     let active = true;
     api.get('/auth/me')
       .then((response) => {
+        if (response.data.meta?.csrfToken) sessionStorage.setItem('csrfToken', response.data.meta.csrfToken);
         if (active) setAdmin(response.data.data);
       })
       .catch(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('admin');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('csrfToken');
+        localStorage.removeItem('adminSession');
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -40,18 +42,21 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, remember = false) => {
     const response = await api.post('/auth/login', { email, password, remember });
-    const { admin: adminData, token } = response.data.data;
+    const { admin: adminData, token, csrfToken } = response.data.data;
     
-    localStorage.setItem('token', token);
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('csrfToken', csrfToken);
+    localStorage.setItem('adminSession', '1');
     setAdmin(adminData);
     
     return response.data;
   };
 
-  const logout = () => {
-    api.post('/auth/logout').catch(() => undefined);
-    localStorage.removeItem('token');
-    localStorage.removeItem('admin');
+  const logout = async () => {
+    try { await api.post('/auth/logout'); } catch { /* Clear the local session even if the API is unavailable. */ }
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('csrfToken');
+    localStorage.removeItem('adminSession');
     setAdmin(null);
   };
 
