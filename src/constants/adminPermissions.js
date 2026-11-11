@@ -7,6 +7,7 @@ export const ADMIN_PERMISSION_GROUPS = [
       ['projects.update', 'Edit project details'],
       ['projects.status', 'Update project status'],
       ['projects.delete', 'Delete projects'],
+      ['projects.publish', 'Publish or archive projects'],
     ],
   },
   {
@@ -19,11 +20,17 @@ export const ADMIN_PERMISSION_GROUPS = [
   },
   {
     label: 'Website',
-    permissions: [['content.update', 'Edit website content and gallery']],
+    permissions: [
+      ['content.update', 'Edit website content and gallery'],
+      ['content.publish', 'Publish website content'],
+    ],
   },
   {
     label: 'Administration',
-    permissions: [['users.manage', 'Add users and manage access']],
+    permissions: [
+      ['users.manage', 'Add users and manage access'],
+      ['audit.view', 'View administrative audit trail'],
+    ],
   },
 ];
 

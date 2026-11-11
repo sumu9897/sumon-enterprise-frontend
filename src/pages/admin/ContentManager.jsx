@@ -1,11 +1,12 @@
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'react-toastify';
-import { FaBuilding, FaEnvelope, FaHistory, FaImages, FaPlus, FaSave, FaTrash } from 'react-icons/fa';
+import { FaBuilding, FaEnvelope, FaHistory, FaHome, FaImages, FaPlus, FaSave, FaTrash, FaUpload } from 'react-icons/fa';
 import AdminSidebar from '../../components/AdminSidebar';
 import api, { getApiErrorMessage } from '../../services/api';
 import defaultSiteContent from '../../data/defaultSiteContent';
 
 const TABS = [
+  { key: 'homepage', label: 'Homepage', icon: <FaHome /> },
   { key: 'about', label: 'About', icon: <FaHistory /> },
   { key: 'services', label: 'Services', icon: <FaBuilding /> },
   { key: 'gallery', label: 'Gallery', icon: <FaImages /> },
@@ -69,21 +70,28 @@ const ContentManager = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
 
   useEffect(() => {
     let active = true;
 
-    Promise.allSettled([api.get('/site-content/admin'), api.get('/projects?limit=100')])
+    Promise.allSettled([api.get('/site-content/admin'), api.get('/projects/admin?limit=100')])
       .then(([contentResult, projectsResult]) => {
         if (!active) return;
-        const data = contentResult.status === 'fulfilled' ? contentResult.value.data.data || {} : cloneDefaults();
+        const storedData = contentResult.status === 'fulfilled' ? contentResult.value.data.data || {} : cloneDefaults();
+        const data = storedData.draftContent || storedData;
+        setHasDraft(Boolean(storedData.draftContent));
         const loadedProjects = projectsResult.status === 'fulfilled' ? projectsResult.value.data.data || [] : [];
         const fallbackGallery = loadedProjects.flatMap((project) => (project.images || []).map((image, index) => ({ imageUrl: image.url, caption: image.caption || project.projectName, project: project._id, order: index, active: true })));
         setContent({
+          homepage: { ...defaultSiteContent.homepage, ...(data.homepage || {}) },
+          company: { ...defaultSiteContent.company, ...(data.company || {}) },
           about: { ...defaultSiteContent.about, ...(data.about || {}) },
           services: data.services?.length ? data.services : defaultSiteContent.services,
           contact: { ...defaultSiteContent.contact, ...(data.contact || {}) },
           gallery: (data.gallery?.length ? data.gallery : fallbackGallery).map((item) => ({ ...item, project: item.project?._id || item.project })),
+          achievements: data.achievements || defaultSiteContent.achievements,
+          testimonials: data.testimonials || defaultSiteContent.testimonials,
         });
         setProjects(loadedProjects);
         if (contentResult.status === 'rejected') {
@@ -107,6 +115,8 @@ const ContentManager = () => {
   }, []);
 
   const setAbout = (field, value) => setContent((current) => ({ ...current, about: { ...current.about, [field]: value } }));
+  const setHomepage = (field, value) => setContent((current) => ({ ...current, homepage: { ...current.homepage, [field]: value } }));
+  const setCompany = (field, value) => setContent((current) => ({ ...current, company: { ...current.company, [field]: value } }));
   const setContact = (field, value) => setContent((current) => ({ ...current, contact: { ...current.contact, [field]: value } }));
   const updateArray = (section, index, field, value) => setContent((current) => ({
     ...current,
@@ -118,13 +128,26 @@ const ContentManager = () => {
   const removeAboutArray = (section, index) => setContent((current) => ({ ...current, about: { ...current.about, [section]: current.about[section].filter((_, itemIndex) => itemIndex !== index) } }));
   const addAboutArray = (section, item) => setContent((current) => ({ ...current, about: { ...current.about, [section]: [...current.about[section], item] } }));
 
-  const save = async () => {
+  const saveDraft = async () => {
     try {
       setSaving(true);
-      await api.put('/site-content', content);
-      toast.success('Website content published successfully.');
+      await api.put('/site-content/draft', content);
+      setHasDraft(true);
+      toast.success('Draft saved. Public content is unchanged.');
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Content could not be saved.'));
+    } finally { setSaving(false); }
+  };
+
+  const publish = async () => {
+    try {
+      setSaving(true);
+      await api.put('/site-content/draft', content);
+      await api.post('/site-content/publish');
+      setHasDraft(false);
+      toast.success('Website content published successfully.');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Content could not be published.'));
     } finally { setSaving(false); }
   };
 
@@ -138,7 +161,11 @@ const ContentManager = () => {
           <p className="text-xs font-bold uppercase tracking-[.2em] text-amber-400">Website CMS</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
             <div><h1 className="font-heading text-3xl sm:text-4xl">Content manager</h1><p className="mt-2 text-sm text-white/40">Update public website content without editing code.</p></div>
-            <button type="button" onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-3 text-sm font-bold text-[#111320] transition hover:bg-amber-300 disabled:opacity-50"><FaSave />{saving ? 'Saving…' : 'Save all changes'}</button>
+            <div className="flex flex-wrap items-center gap-2">
+              {hasDraft && <span className="rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-xs font-bold text-sky-300">Unpublished draft</span>}
+              <button type="button" onClick={saveDraft} disabled={saving} className="inline-flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 py-3 text-sm font-bold text-amber-300 transition hover:bg-amber-400/20 disabled:opacity-50"><FaSave />Save draft</button>
+              <button type="button" onClick={publish} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-3 text-sm font-bold text-[#111320] transition hover:bg-amber-300 disabled:opacity-50"><FaUpload />{saving ? 'Working…' : 'Publish changes'}</button>
+            </div>
           </div>
         </header>
 
@@ -146,6 +173,25 @@ const ContentManager = () => {
           <div className="flex gap-2 overflow-x-auto rounded-2xl border border-white/5 bg-[#111320] p-2">
             {TABS.map((item) => <button type="button" key={item.key} onClick={() => setTab(item.key)} className={`flex min-w-max items-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition ${tab === item.key ? 'bg-amber-400 text-[#111320]' : 'text-white/45 hover:bg-white/5 hover:text-white'}`}>{item.icon}{item.label}</button>)}
           </div>
+
+          {tab === 'homepage' && <section className="mt-6 space-y-6">
+            <div className="grid gap-5 rounded-2xl border border-white/5 bg-[#111320] p-5 sm:grid-cols-2 sm:p-6">
+              <TextInput title="Hero eyebrow" value={content.homepage.heroEyebrow || ''} onChange={(e) => setHomepage('heroEyebrow', e.target.value)} />
+              <TextInput title="Hero title" value={content.homepage.heroTitle || ''} onChange={(e) => setHomepage('heroTitle', e.target.value)} />
+              <div className="sm:col-span-2"><TextArea title="Hero subtitle" value={content.homepage.heroSubtitle || ''} onChange={(e) => setHomepage('heroSubtitle', e.target.value)} /></div>
+              <div className="sm:col-span-2"><ImageField title="Hero image" value={content.homepage.heroImageUrl || ''} onChange={(value) => setHomepage('heroImageUrl', value)} /></div>
+              <TextInput title="Primary button label" value={content.homepage.primaryCtaLabel || ''} onChange={(e) => setHomepage('primaryCtaLabel', e.target.value)} />
+              <TextInput title="Primary button URL" value={content.homepage.primaryCtaUrl || ''} onChange={(e) => setHomepage('primaryCtaUrl', e.target.value)} />
+              <TextArea title="Mission" value={content.company.mission || ''} onChange={(e) => setCompany('mission', e.target.value)} />
+              <TextArea title="Vision" value={content.company.vision || ''} onChange={(e) => setCompany('vision', e.target.value)} />
+            </div>
+            <EditorList title="Achievements" onAdd={() => addArray('achievements', { value: '', label: '', order: content.achievements.length, active: true })}>
+              {content.achievements.map((item, index) => <div key={item._id || index} className="grid gap-3 rounded-xl border border-white/5 bg-white/[.02] p-4 sm:grid-cols-[140px_1fr_100px_auto]"><input className={inputClass} placeholder="25+" value={item.value || ''} onChange={(e) => updateArray('achievements', index, 'value', e.target.value)} /><input className={inputClass} placeholder="Years of experience" value={item.label || ''} onChange={(e) => updateArray('achievements', index, 'label', e.target.value)} /><input className={inputClass} type="number" min="0" value={item.order ?? index} onChange={(e) => updateArray('achievements', index, 'order', Number(e.target.value))} /><RemoveButton onClick={() => removeArray('achievements', index)} /></div>)}
+            </EditorList>
+            <EditorList title="Testimonials" onAdd={() => addArray('testimonials', { name: '', company: '', quote: '', order: content.testimonials.length, active: true })}>
+              {content.testimonials.map((item, index) => <div key={item._id || index} className="grid gap-3 rounded-xl border border-white/5 bg-white/[.02] p-4 sm:grid-cols-2"><TextInput title="Client name" value={item.name || ''} onChange={(e) => updateArray('testimonials', index, 'name', e.target.value)} /><TextInput title="Company" value={item.company || ''} onChange={(e) => updateArray('testimonials', index, 'company', e.target.value)} /><div className="sm:col-span-2"><TextArea title="Testimonial" value={item.quote || ''} onChange={(e) => updateArray('testimonials', index, 'quote', e.target.value)} /></div><div className="sm:col-span-2 flex justify-end"><RemoveButton onClick={() => removeArray('testimonials', index)} /></div></div>)}
+            </EditorList>
+          </section>}
 
           {tab === 'about' && <section className="mt-6 space-y-6">
             <div className="grid gap-5 rounded-2xl border border-white/5 bg-[#111320] p-5 sm:grid-cols-2 sm:p-6">

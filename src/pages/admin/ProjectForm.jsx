@@ -70,6 +70,8 @@ const ProjectForm = () => {
   const [formData, setFormData] = useState({
     projectName: '',
     company: '',
+    category: 'General Construction',
+    scope: '',
     description: '',
     'address.plot': '',
     'address.road': '',
@@ -84,6 +86,11 @@ const ProjectForm = () => {
     'specifications.totalArea': '',
     'specifications.constructionType': '',
     featured: false,
+    publishStatus: 'published',
+    highlights: '',
+    seoTitle: '',
+    seoDescription: '',
+    order: 0,
     longitude: '90.4125',
     latitude: '23.8103',
   });
@@ -104,12 +111,14 @@ const ProjectForm = () => {
       const fetchProject = async () => {
         try {
           setFetching(true);
-          const r = await api.get(`/projects/${id}`);
+          const r = await api.get(`/projects/admin/${id}`);
           const p = r.data.data;
           setExistingImages(p.images || []);
           setFormData({
             projectName: p.projectName || '',
             company: p.company || '',
+            category: p.category || 'General Construction',
+            scope: p.scope || '',
             description: p.description || '',
             'address.plot': p.address?.plot || '',
             'address.road': p.address?.road || '',
@@ -124,6 +133,11 @@ const ProjectForm = () => {
             'specifications.totalArea': p.specifications?.totalArea || '',
             'specifications.constructionType': p.specifications?.constructionType || '',
             featured: p.featured || false,
+            publishStatus: p.publishStatus || 'published',
+            highlights: (p.highlights || []).join('\n'),
+            seoTitle: p.seo?.title || '',
+            seoDescription: p.seo?.description || '',
+            order: p.order || 0,
             longitude: p.location?.coordinates?.[0] || '90.4125',
             latitude: p.location?.coordinates?.[1] || '23.8103',
           });
@@ -446,7 +460,7 @@ const ProjectForm = () => {
                     className="form-input"
                   />
                 </Field>
-                <Field label="Company" required>
+                <Field label="Client / Company" required>
                   <input
                     name="company"
                     type="text"
@@ -456,6 +470,9 @@ const ProjectForm = () => {
                     placeholder="e.g. M/S Sumon Enterprise"
                     className="form-input"
                   />
+                </Field>
+                <Field label="Project Category">
+                  <input name="category" type="text" value={formData.category} onChange={handleChange} placeholder="Residential, Commercial, Industrial…" className="form-input" />
                 </Field>
               </div>
               <div style={{ marginTop: '20px' }}>
@@ -469,6 +486,11 @@ const ProjectForm = () => {
                     placeholder="Describe the project scope, type, and highlights…"
                     className="form-textarea"
                   />
+                </Field>
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Field label="Scope of Work">
+                  <textarea name="scope" rows="3" value={formData.scope} onChange={handleChange} placeholder="Describe responsibilities, deliverables, and contract scope…" className="form-textarea" />
                 </Field>
               </div>
             </Section>
@@ -614,6 +636,13 @@ const ProjectForm = () => {
                     ))}
                   </select>
                 </Field>
+                <Field label="Publishing Status" required hint="Drafts and archived projects are hidden from the public website">
+                  <select name="publishStatus" required value={formData.publishStatus} onChange={handleChange} className="form-select">
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </Field>
                 <Field label="Start Date" required>
                   <input
                     name="startDate"
@@ -662,6 +691,21 @@ const ProjectForm = () => {
                     </div>
                   </button>
                 </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginTop: '20px' }}>
+                <Field label="Project Highlights" hint="One highlight per line">
+                  <textarea name="highlights" rows="4" value={formData.highlights} onChange={handleChange} className="form-textarea" />
+                </Field>
+                <Field label="Display Order" hint="Lower numbers appear first">
+                  <input name="order" type="number" min="0" value={formData.order} onChange={handleChange} className="form-input" />
+                </Field>
+              </div>
+            </Section>
+
+            <Section icon={<FaInfoCircle />} title="Search Engine Preview">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <Field label="SEO Title" hint="Recommended maximum: 70 characters"><input name="seoTitle" maxLength="70" value={formData.seoTitle} onChange={handleChange} className="form-input" /></Field>
+                <Field label="SEO Description" hint="Recommended maximum: 160 characters"><textarea name="seoDescription" maxLength="160" rows="3" value={formData.seoDescription} onChange={handleChange} className="form-textarea" /></Field>
               </div>
             </Section>
 

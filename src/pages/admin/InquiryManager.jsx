@@ -7,6 +7,7 @@ import {
   FaTrash, FaEnvelope, FaEnvelopeOpen, FaFilter,
   FaTimes, FaReply, FaUser, FaPhone, FaTag, FaCalendarAlt,
   FaInbox,
+  FaSearch, FaStickyNote,
 } from 'react-icons/fa';
 
 /* ─── Status Badge ────────────────────────────────────────── */
@@ -45,8 +46,14 @@ const InquiryManager = () => {
   const [filter, setFilter] = useState('');
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const [search, setSearch] = useState('');
+  const [admins, setAdmins] = useState([]);
+  const [note, setNote] = useState('');
 
-  useEffect(() => { fetchInquiries(); }, []);
+  useEffect(() => {
+    fetchInquiries();
+    if (can('inquiries.update')) api.get('/auth/staff').then((response) => setAdmins(response.data.data || [])).catch(() => undefined);
+  }, []);
 
   const fetchInquiries = async () => {
     try {
@@ -90,7 +97,32 @@ const InquiryManager = () => {
     if (inq.status === 'unread' && can('inquiries.update')) handleStatusChange(inq._id, 'read');
   };
 
-  const filtered = filter ? inquiries.filter(i => i.status === filter) : inquiries;
+  const handleAssignment = async (assignedTo) => {
+    try {
+      const response = await api.put(`/inquiries/${selectedInquiry._id}/assignment`, { assignedTo: assignedTo || null });
+      setSelectedInquiry(response.data.data);
+      setInquiries((current) => current.map((item) => item._id === selectedInquiry._id ? response.data.data : item));
+      toast.success('Assignment updated');
+    } catch { toast.error('Assignment could not be updated'); }
+  };
+
+  const addNote = async () => {
+    if (!note.trim()) return;
+    try {
+      const response = await api.post(`/inquiries/${selectedInquiry._id}/notes`, { text: note });
+      setSelectedInquiry(response.data.data);
+      setInquiries((current) => current.map((item) => item._id === selectedInquiry._id ? response.data.data : item));
+      setNote('');
+      toast.success('Internal note added');
+    } catch { toast.error('Note could not be added'); }
+  };
+
+  const filtered = inquiries.filter((inquiry) => {
+    const matchesStatus = filter ? inquiry.status === filter : true;
+    const needle = search.trim().toLowerCase();
+    const matchesSearch = !needle || [inquiry.name, inquiry.email, inquiry.phone, inquiry.subject].some((value) => String(value || '').toLowerCase().includes(needle));
+    return matchesStatus && matchesSearch;
+  });
   const unreadCount = inquiries.filter(i => i.status === 'unread').length;
 
   return (
@@ -157,6 +189,7 @@ const InquiryManager = () => {
                   {filtered.length} / {inquiries.length}
                 </span>
               </div>
+              <div className="relative"><FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name, email, phone or subject…" className="w-full rounded-xl border border-white/10 bg-[#111320] py-3 pl-11 pr-4 text-sm text-white outline-none focus:border-amber-400/40" /></div>
 
               {/* Table */}
               <div className="bg-[#111320] border border-white/5 rounded-2xl overflow-hidden">
@@ -303,6 +336,11 @@ const InquiryManager = () => {
                         );
                       })}
                     </div>
+                  </div>}
+
+                  {can('inquiries.update') && <div className="space-y-4 border-b border-white/5 px-5 py-4">
+                    <div><p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-amber-400">Assigned administrator</p><select value={selectedInquiry.assignedTo?._id || selectedInquiry.assignedTo || ''} onChange={(event) => handleAssignment(event.target.value)} className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white"><option value="">Unassigned</option>{admins.map((item) => <option key={item._id} value={item._id}>{item.name}</option>)}</select></div>
+                    <div><p className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400"><FaStickyNote />Internal notes</p><div className="max-h-36 space-y-2 overflow-y-auto">{(selectedInquiry.internalNotes || []).map((entry) => <div key={entry._id} className="rounded-lg bg-white/[.03] p-3"><p className="text-xs text-white/65">{entry.text}</p><p className="mt-1 text-[9px] text-white/25">{entry.author?.name || 'Admin'} · {new Date(entry.createdAt).toLocaleString()}</p></div>)}</div><textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength="2000" rows="3" placeholder="Private note for the admin team…" className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white outline-none focus:border-amber-400/40" /><button type="button" onClick={addNote} className="mt-2 rounded-lg bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-300">Add internal note</button></div>
                   </div>}
 
                   {/* Reply button */}

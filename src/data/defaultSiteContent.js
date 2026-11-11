@@ -1,4 +1,13 @@
 const defaultSiteContent = {
+  homepage: {
+    heroEyebrow: 'Building Bangladesh Since 2000',
+    heroTitle: 'Construction Excellence. Built to Last.',
+    heroSubtitle: 'Trusted construction, development, and project delivery for residential, commercial, and industrial clients.',
+    heroImageUrl: '',
+    primaryCtaLabel: 'Explore Projects',
+    primaryCtaUrl: '/projects',
+  },
+  company: { mission: '', vision: '' },
   about: {
     eyebrow: 'Our Story',
     title: 'About M/S Sumon Enterprise',
@@ -36,6 +45,8 @@ const defaultSiteContent = {
     officeHours: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].map((day) => ({ day, hours: '8:00 AM – 5:00 PM', open: true })).concat({ day: 'Friday', hours: 'Closed', open: false }),
   },
   gallery: [],
+  achievements: [],
+  testimonials: [],
 };
 
 export default defaultSiteContent;

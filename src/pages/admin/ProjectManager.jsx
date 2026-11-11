@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { PROJECT_STATUSES, getProjectStatus } from '../../constants/projectStatuses';
 import {
   FaPlus, FaEdit, FaTrash, FaEye, FaSearch,
-  FaBuilding, FaFilter, FaTimes, FaStar, FaRegStar,
+  FaBuilding, FaFilter, FaTimes, FaStar, FaRegStar, FaArchive,
 } from 'react-icons/fa';
 
 /* ─── Status Badge ────────────────────────────────────────── */
@@ -39,7 +39,7 @@ const ProjectManager = () => {
 
   const fetchProjects = async () => {
     try {
-      const r = await api.get('/projects?limit=200');
+      const r = await api.get('/projects/admin?limit=100');
       setProjects(r.data.data || []);
     } catch {
       toast.error('Failed to load projects');
@@ -59,6 +59,17 @@ const ProjectManager = () => {
       toast.error('Failed to delete project');
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleArchive = async (project) => {
+    if (!window.confirm(`Archive "${project.projectName}"? It will be hidden from the public website.`)) return;
+    try {
+      const response = await api.patch(`/projects/${project._id}/archive`);
+      setProjects((current) => current.map((item) => item._id === project._id ? response.data.data : item));
+      toast.success('Project archived');
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Project could not be archived.'));
     }
   };
 
@@ -266,6 +277,7 @@ const ProjectManager = () => {
                   {/* Name */}
                   <div className="col-span-1 md:col-span-2">
                     <p className="text-sm font-semibold text-white truncate">{project.projectName}</p>
+                    <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider ${project.publishStatus === 'draft' ? 'bg-sky-500/10 text-sky-300' : project.publishStatus === 'archived' ? 'bg-white/5 text-white/30' : 'bg-emerald-500/10 text-emerald-300'}`}>{project.publishStatus || 'published'}</span>
                     <p className="text-xs text-white/30 md:hidden mt-0.5 truncate">{project.company}</p>
                   </div>
 
@@ -333,6 +345,7 @@ const ProjectManager = () => {
                     >
                       <FaEdit size={12} />
                     </Link>}
+                    {can('projects.update') && project.publishStatus !== 'archived' && <button type="button" onClick={() => handleArchive(project)} title="Archive" className="w-8 h-8 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 flex items-center justify-center transition-all"><FaArchive size={12} /></button>}
                     {can('projects.delete') && <button
                       onClick={() => handleDelete(project._id, project.projectName)}
                       disabled={deleting === project._id}

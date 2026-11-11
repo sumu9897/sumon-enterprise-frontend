@@ -62,6 +62,8 @@ const Dashboard = () => {
     totalInquiries: 0, unreadInquiries: 0,
   });
   const [recentInquiries, setRecentInquiries] = useState([]);
+  const [projectBreakdown, setProjectBreakdown] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchData(); }, []);
@@ -69,22 +71,28 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [projRes, inqStatsRes, inqRes] = await Promise.all([
-        can('projects.view') ? api.get('/projects?limit=200') : Promise.resolve(null),
+      const [projRes, summaryRes, inqStatsRes, inqRes, activityRes] = await Promise.all([
+        can('projects.view') ? api.get('/projects/admin?limit=100') : Promise.resolve(null),
+        can('projects.view') ? api.get('/projects/admin/summary') : Promise.resolve(null),
         can('inquiries.view') ? api.get('/inquiries/stats') : Promise.resolve(null),
         can('inquiries.view') ? api.get('/inquiries?limit=5') : Promise.resolve(null),
+        can('audit.view') ? api.get('/auth/audit-logs?limit=8') : Promise.resolve(null),
       ]);
       const projects  = projRes?.data?.data || [];
       const inqStats  = inqStatsRes?.data?.data || {};
       const inquiries = inqRes?.data?.data || [];
+      const summary = summaryRes?.data?.data || {};
+      const statusCounts = Object.fromEntries((summary.statuses || []).map((item) => [item._id, item.count]));
       setStats({
-        totalProjects:    projects.length,
-        activeProjects:    projects.filter(p => p.status !== 'Completed').length,
-        completedProjects: projects.filter(p => p.status === 'Completed').length,
+        totalProjects:    summary.total ?? projects.length,
+        activeProjects:   (summary.statuses || []).filter((item) => item._id !== 'Completed').reduce((sum, item) => sum + item.count, 0),
+        completedProjects: statusCounts.Completed || 0,
         totalInquiries:   inqStats.total || 0,
         unreadInquiries:  inqStats.unread || 0,
       });
       setRecentInquiries(inquiries);
+      setProjectBreakdown(summaryRes?.data?.data?.statuses || []);
+      setRecentActivity(activityRes?.data?.data || []);
     } catch {
       toast.error('Failed to load dashboard data');
     } finally {
@@ -277,6 +285,27 @@ const Dashboard = () => {
               </div>
 
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <section className="rounded-2xl border border-white/5 bg-[#111320] p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Project pipeline</p>
+              <h2 className="mt-1 font-bold text-lg" style={{ fontFamily: 'Georgia, serif' }}>Status distribution</h2>
+              <div className="mt-5 space-y-3">
+                {projectBreakdown.length ? projectBreakdown.map((item) => {
+                  const width = stats.totalProjects ? Math.max(4, (item.count / stats.totalProjects) * 100) : 0;
+                  return <div key={item._id}><div className="mb-1 flex justify-between text-xs"><span className="text-white/45">{item._id || 'Unspecified'}</span><span className="font-bold text-white/70">{item.count}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: `${width}%` }} /></div></div>;
+                }) : <p className="py-8 text-center text-sm text-white/25">No project data available</p>}
+              </div>
+            </section>
+
+            {can('audit.view') && <section className="rounded-2xl border border-white/5 bg-[#111320] p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Governance</p>
+              <h2 className="mt-1 font-bold text-lg" style={{ fontFamily: 'Georgia, serif' }}>Recent admin activity</h2>
+              <div className="mt-4 divide-y divide-white/5">
+                {recentActivity.length ? recentActivity.map((entry) => <div key={entry._id} className="flex items-start justify-between gap-4 py-3"><div><p className="text-sm font-semibold text-white/75">{String(entry.action).replaceAll('.', ' ')}</p><p className="mt-0.5 text-xs text-white/30">{entry.admin?.name || 'System'} · {entry.outcome}</p></div><time className="shrink-0 text-[10px] text-white/25">{new Date(entry.createdAt).toLocaleString()}</time></div>) : <p className="py-8 text-center text-sm text-white/25">No activity recorded yet</p>}
+              </div>
+            </section>}
           </div>
         </div>
       </main>
